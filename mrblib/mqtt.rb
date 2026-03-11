@@ -1,0 +1,88 @@
+module Net
+  module MQTT
+    class Client
+      attr_reader :host, :port
+      attr_accessor :client_id, :keep_alive, :clean_session
+
+      def initialize(host, port = 1883, **options)
+        @host = host
+        @port = port
+        @client_id = options[:client_id] || "picoruby-#{Time.now.to_i}"
+        @keep_alive = options[:keep_alive] || 60
+        @clean_session = options[:clean_session] || true
+        @connected = false
+      end
+
+      def connect
+        # Initiate non-blocking connection
+        result = _connect_impl(@host, @port, @client_id)
+        return false unless result
+
+        # Short test loop (~3 seconds timeout)
+        300.times do |i|
+          _poll_impl if respond_to?(:_poll_impl)
+          if _is_connected_impl
+            @connected = true
+            return true
+          end
+
+          poll_sleep_ms(10)
+        end
+
+        @connected = false
+        false
+      end
+
+      def poll_sleep_ms(ms)
+        if respond_to?(:_poll_sleep_impl)
+          _poll_sleep_impl(ms)
+        elsif respond_to?(:_poll_impl)
+          ms.times do
+            _poll_impl
+            sleep_ms 1
+          end
+        else
+          sleep_ms(ms)
+        end
+      end
+
+      def disconnect
+        return unless @connected
+        _disconnect_impl
+        @connected = false
+      end
+
+      def connected?
+        @connected
+      end
+
+      def publish(topic, payload, retain: false, qos: 0)
+        return false unless @connected
+        _publish_impl(topic, payload.to_s)
+      end
+
+      def subscribe(topic)
+        return false unless @connected
+        _subscribe_impl(topic)
+      end
+
+      def get(&block)
+        return unless @connected
+
+        if block_given?
+          # Non-Blocking
+          loop do
+            message = _get_message_impl
+            if message
+              yield(message[0], message[1])
+            end
+            sleep_ms 10
+          end
+        else
+          # Blocking
+          _get_message_impl
+        end
+      end
+    end
+  end
+end
