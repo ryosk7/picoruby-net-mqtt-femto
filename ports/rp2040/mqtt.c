@@ -4,7 +4,7 @@
  */
 
 #include "../../include/mqtt.h"
-#include "../../../picoruby-socket/include/socket.h"
+#include "socket.h"
 #include "lwip/apps/mqtt.h"
 #include "lwip/apps/mqtt_priv.h"
 #include "lwip/timeouts.h"
