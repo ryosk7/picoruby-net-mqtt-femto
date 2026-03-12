@@ -24,12 +24,6 @@ If you want to use it from another gem or external build config, add it as a Git
 spec.add_dependency 'picoruby-net-mqtt-femto', 'ryosk7/picoruby-net-mqtt-femto'
 ```
 
-If you vendor this gem into a PicoRuby tree, you can also load it like a regular core gem:
-
-```ruby
-conf.gem core: 'picoruby-net-mqtt-femto'
-```
-
 ## Usage
 
 The API is compatible with picoruby-net-mqtt:
