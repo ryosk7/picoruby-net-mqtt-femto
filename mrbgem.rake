@@ -12,6 +12,18 @@ MRuby::Gem::Specification.new('picoruby-net-mqtt-femto') do |spec|
   spec.add_dependency 'picoruby-pack'
   spec.add_dependency 'picoruby-time'
 
-  # Note: C implementation is in ports/rp2040/mqtt.c
-  # and will be automatically included by CMake build system
+  spec.cc.include_paths << "#{dir}/include"
+
+  unless build.posix?
+    lwip_dir = "#{MRUBY_ROOT}/mrbgems/picoruby-socket/lib/lwip"
+    spec.cc.include_paths << "#{MRUBY_ROOT}/mrbgems/picoruby-socket/include"
+    spec.cc.include_paths << "#{lwip_dir}/src/include"
+    spec.cc.include_paths << "#{lwip_dir}/contrib/ports/unix/port/include"
+    spec.cc.include_paths << "#{lwip_dir}/src/apps/altcp_tls"
+
+    spec.objs << "#{dir}/ports/rp2040/mqtt.o"
+    file "#{dir}/ports/rp2040/mqtt.o" => "#{dir}/ports/rp2040/mqtt.c" do |t|
+      cc.run t.name, t.prerequisites.first
+    end
+  end
 end
