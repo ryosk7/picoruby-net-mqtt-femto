@@ -15,6 +15,11 @@ This gem focuses on:
 
 In other words, `picoruby-net-mqtt` is the more portable and Ruby-centric option, while `picoruby-net-mqtt-femto` exists as a specialized option for environments where memory pressure and lwIP integration matter more than feature completeness.
 
+| gem | implementation | target |
+|---|---|---|
+| picoruby-net-mqtt | pure Ruby | boards with more memory |
+| picoruby-net-mqtt-femto | lwIP-based | low-memory environments |
+
 ## Features
 
 - Native lwIP MQTT implementation for better performance
