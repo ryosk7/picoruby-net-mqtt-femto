@@ -1,8 +1,19 @@
 # picoruby-net-mqtt-femto
 
-lwIP native MQTT client for PicoRuby (RP2040 optimized).
+An external mrbgem for PicoRuby that provides an lwIP-based MQTT client for low-memory environments.
 
-This is a native lwIP implementation of MQTT 3.1.1 client for PicoRuby, designed for high-performance IoT applications on RP2040-based boards.
+This library is maintained outside the main `picoruby/picoruby` repository.
+
+`picoruby-net-mqtt-femto` is not intended to compete with the pure Ruby `picoruby-net-mqtt` implementation. The two libraries target different constraints and different execution environments.
+
+This gem focuses on:
+
+- low-memory, lwIP-oriented deployments
+- a `picoruby-socket`-based integration model
+- cooperative-multitasking-friendly behavior
+- experimental but practical use on constrained boards such as RP2040/Pico W
+
+In other words, `picoruby-net-mqtt` is the more portable and Ruby-centric option, while `picoruby-net-mqtt-femto` exists as a specialized option for environments where memory pressure and lwIP integration matter more than feature completeness.
 
 ## Features
 
