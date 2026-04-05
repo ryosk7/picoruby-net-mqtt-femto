@@ -27,6 +27,7 @@ In other words, `picoruby-net-mqtt` is the more portable and Ruby-centric option
 - QoS 0 (At most once delivery)
 - CONNECT, PUBLISH, SUBSCRIBE, PING, DISCONNECT
 - Keep-alive with automatic PING
+- Small fixed receive queue for bursty incoming messages
 - API compatible with picoruby-net-mqtt (see support status below)
 - Optimized for RP2040 (pico_w) boards
 

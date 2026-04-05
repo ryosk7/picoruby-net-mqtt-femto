@@ -22,6 +22,10 @@ extern "C" {
 #define MQTT_CLIENT_ID_MAX_LEN 64
 #endif
 
+#ifndef MQTT_RECEIVE_QUEUE_LEN
+#define MQTT_RECEIVE_QUEUE_LEN 4
+#endif
+
 typedef enum {
   MQTT_STATE_IDLE,
   MQTT_STATE_CONNECTING,
@@ -33,6 +37,11 @@ typedef enum {
   MQTT_STATE_ERROR,
   MQTT_STATE_TIMEOUT
 } mqtt_fsm_state_t;
+
+typedef struct {
+  char topic[MQTT_TOPIC_MAX_LEN];
+  char payload[MQTT_PAYLOAD_MAX_LEN];
+} mqtt_message_t;
 
 typedef struct {
   void *client;  // Platform-specific client pointer
@@ -47,7 +56,10 @@ typedef struct {
   char recv_topic[MQTT_TOPIC_MAX_LEN];
   char recv_payload[MQTT_PAYLOAD_MAX_LEN];
   int recv_payload_len;
-  bool message_arrived;
+  mqtt_message_t recv_queue[MQTT_RECEIVE_QUEUE_LEN];
+  int recv_queue_head;
+  int recv_queue_tail;
+  int recv_queue_count;
   char client_id[MQTT_CLIENT_ID_MAX_LEN];
   int connection_status;
 

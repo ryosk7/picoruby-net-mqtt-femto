@@ -21,6 +21,7 @@ static void mqtt_incoming_publish_cb(void *arg, const char *topic,
 static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len,
                                   u8_t flags);
 static void mqtt_request_cb(void *arg, err_t err);
+static void mqtt_enqueue_message(mqtt_context_t *ctx);
 
 void MQTT_poll_impl(void) {
   for (int i = 0; i < 3; i++) {
@@ -127,8 +128,26 @@ static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len,
   ctx->recv_payload[ctx->recv_payload_len] = '\0';
 
   if (flags & MQTT_DATA_FLAG_LAST) {
-    ctx->message_arrived = true;
+    mqtt_enqueue_message(ctx);
   }
+}
+
+static void mqtt_enqueue_message(mqtt_context_t *ctx) {
+  mqtt_message_t *slot;
+
+  if (ctx->recv_queue_count >= MQTT_RECEIVE_QUEUE_LEN) {
+    ctx->recv_queue_head = (ctx->recv_queue_head + 1) % MQTT_RECEIVE_QUEUE_LEN;
+    ctx->recv_queue_count--;
+  }
+
+  slot = &ctx->recv_queue[ctx->recv_queue_tail];
+  strncpy(slot->topic, ctx->recv_topic, sizeof(slot->topic) - 1);
+  slot->topic[sizeof(slot->topic) - 1] = '\0';
+  strncpy(slot->payload, ctx->recv_payload, sizeof(slot->payload) - 1);
+  slot->payload[sizeof(slot->payload) - 1] = '\0';
+
+  ctx->recv_queue_tail = (ctx->recv_queue_tail + 1) % MQTT_RECEIVE_QUEUE_LEN;
+  ctx->recv_queue_count++;
 }
 
 static void mqtt_request_cb(void *arg, err_t err) {
@@ -279,14 +298,15 @@ int MQTT_unsubscribe_impl(const char *topic) {
 int MQTT_get_message_impl(char **topic, char **payload) {
   poll_state();
 
-  if (!g_ctx.message_arrived) {
+  if (g_ctx.recv_queue_count == 0) {
     return -1;
   }
 
-  *topic = g_ctx.recv_topic;
-  *payload = g_ctx.recv_payload;
+  *topic = g_ctx.recv_queue[g_ctx.recv_queue_head].topic;
+  *payload = g_ctx.recv_queue[g_ctx.recv_queue_head].payload;
 
-  g_ctx.message_arrived = false;
+  g_ctx.recv_queue_head = (g_ctx.recv_queue_head + 1) % MQTT_RECEIVE_QUEUE_LEN;
+  g_ctx.recv_queue_count--;
   return 0;
 }
 
