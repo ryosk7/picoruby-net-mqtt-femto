@@ -46,7 +46,8 @@ typedef struct {
 } mqtt_context_t;
 
 int MQTT_connect_impl(const char *host, int port, const char *client_id,
-                      int keep_alive);
+                      int keep_alive, const char *username,
+                      const char *password);
 void MQTT_poll_impl(void);
 void MQTT_poll_sleep_impl(int ms);
 int MQTT_is_connected_impl(void);

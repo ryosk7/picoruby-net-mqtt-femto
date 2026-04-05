@@ -99,7 +99,6 @@ client.disconnect
 This gem provides the same `Net::MQTT` module and client API surface as picoruby-net-mqtt. Feature support differs:
 - QoS 0 only (higher QoS not supported yet)
 - TLS/SSL is not supported
-- username/password authentication is not supported yet
 - `clean_session` option is currently ignored
 - `unsubscribe` and `ping` raise "not supported"
 
@@ -113,7 +112,6 @@ This gem provides the same `Net::MQTT` module and client API surface as picoruby
 - QoS 0
 
 ### Planned
-- `username` / `password` authentication
 - `retain` flag
 - `unsubscribe`
 - QoS 1
