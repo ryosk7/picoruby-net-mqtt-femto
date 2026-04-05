@@ -3,6 +3,8 @@ module Net
     class Client
       def poll_sleep_ms: (Integer) -> void
       def with_reconnect: (?max_attempts: Integer?, ?base_delay_ms: Integer, ?max_delay_ms: Integer) { (Client) -> untyped } -> untyped
+      def receive_with_reconnect: (?timeout: untyped, ?max_attempts: Integer?, ?base_delay_ms: Integer, ?max_delay_ms: Integer) -> [String, String]?
+      def receive_with_reconnect: (?timeout: untyped, ?max_attempts: Integer?, ?base_delay_ms: Integer, ?max_delay_ms: Integer) { (String, String) -> untyped } -> untyped
       attr_accessor auto_resubscribe: bool
 
       private def _connect_impl: (String, Integer, String, Integer, String?, String?, String?, String?, Integer, bool) -> bool

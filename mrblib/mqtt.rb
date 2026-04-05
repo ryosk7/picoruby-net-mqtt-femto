@@ -168,6 +168,29 @@ module Net
         end
       end
 
+      def receive_with_reconnect(timeout: nil, max_attempts: nil,
+                                 base_delay_ms: 100, max_delay_ms: 5_000, &block)
+        if block_given?
+          loop do
+            message = with_reconnect(max_attempts: max_attempts,
+                                     base_delay_ms: base_delay_ms,
+                                     max_delay_ms: max_delay_ms) do |mqtt|
+              mqtt.receive(timeout: timeout)
+            end
+
+            next unless message
+
+            yield(message[0], message[1])
+          end
+        else
+          with_reconnect(max_attempts: max_attempts,
+                         base_delay_ms: base_delay_ms,
+                         max_delay_ms: max_delay_ms) do |mqtt|
+            mqtt.receive(timeout: timeout)
+          end
+        end
+      end
+
       def connected?
         return false unless @connected
 
