@@ -191,6 +191,24 @@ module Net
         end
       end
 
+      def publish_with_reconnect(topic, payload, retain: false, qos: 0,
+                                 max_attempts: nil, base_delay_ms: 100, max_delay_ms: 5_000)
+        with_reconnect(max_attempts: max_attempts,
+                       base_delay_ms: base_delay_ms,
+                       max_delay_ms: max_delay_ms) do |mqtt|
+          mqtt.publish(topic, payload, retain: retain, qos: qos)
+        end
+      end
+
+      def subscribe_with_reconnect(*topics, qos: 0, max_attempts: nil,
+                                   base_delay_ms: 100, max_delay_ms: 5_000)
+        with_reconnect(max_attempts: max_attempts,
+                       base_delay_ms: base_delay_ms,
+                       max_delay_ms: max_delay_ms) do |mqtt|
+          mqtt.subscribe(*topics, qos: qos)
+        end
+      end
+
       def connected?
         return false unless @connected
 
