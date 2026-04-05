@@ -100,7 +100,7 @@ This gem provides the same `Net::MQTT` module and client API surface as picoruby
 - QoS 0 only (higher QoS not supported yet)
 - TLS/SSL is not supported
 - `clean_session` option is currently ignored
-- `unsubscribe` and `ping` raise "not supported"
+- `ping` raises "not supported"
 
 ## Support Status
 
@@ -112,7 +112,6 @@ This gem provides the same `Net::MQTT` module and client API surface as picoruby
 - QoS 0
 
 ### Planned
-- `unsubscribe`
 - QoS 1
 - QoS 2
 

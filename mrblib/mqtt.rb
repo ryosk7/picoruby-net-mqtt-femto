@@ -118,7 +118,8 @@ module Net
 
       def unsubscribe(*topics)
         raise MQTTError.new("Not connected") unless @connected
-        raise MQTTError.new("unsubscribe not supported")
+        raise MQTTError.new("Only one topic supported") if topics.length != 1
+        _unsubscribe_impl(topics[0])
       end
 
       def receive(timeout: nil)

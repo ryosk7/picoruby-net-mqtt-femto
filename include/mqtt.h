@@ -53,6 +53,7 @@ void MQTT_poll_impl(void);
 void MQTT_poll_sleep_impl(int ms);
 int MQTT_is_connected_impl(void);
 int MQTT_subscribe_impl(const char *topic);
+int MQTT_unsubscribe_impl(const char *topic);
 int MQTT_publish_impl(const char *topic, const char *payload, int len,
                       int retain);
 void MQTT_disconnect_impl(void);

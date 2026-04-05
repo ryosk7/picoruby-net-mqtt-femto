@@ -242,6 +242,31 @@ int MQTT_subscribe_impl(const char *topic) {
   return (g_ctx.topic_to_sub[0] == '\0') ? 0 : -1;
 }
 
+int MQTT_unsubscribe_impl(const char *topic) {
+  if (g_ctx.fsm_state != MQTT_STATE_ACTIVE) {
+    return -1;
+  }
+
+  g_ctx.fsm_state = MQTT_STATE_SUBSCRIBING;
+
+  lwip_begin();
+  err_t err = mqtt_unsubscribe((mqtt_client_t*)g_ctx.client, topic, mqtt_request_cb, &g_ctx);
+  lwip_end();
+
+  if (err != ERR_OK) {
+    g_ctx.fsm_state = MQTT_STATE_ERROR;
+    return -1;
+  }
+
+  int timeout = 100;
+  while (g_ctx.fsm_state == MQTT_STATE_SUBSCRIBING && timeout-- > 0) {
+    if (!poll_state()) return -1;
+    Net_busy_wait_ms(10);
+  }
+
+  return (g_ctx.fsm_state == MQTT_STATE_ACTIVE) ? 0 : -1;
+}
+
 int MQTT_get_message_impl(char **topic, char **payload) {
   poll_state();
 

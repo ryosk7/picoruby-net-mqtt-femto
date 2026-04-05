@@ -9,6 +9,7 @@ module Net
       private def _is_connected_impl: () -> bool
       private def _publish_impl: (String, String, bool) -> bool
       private def _subscribe_impl: (String) -> bool
+      private def _unsubscribe_impl: (String) -> bool
       private def _get_message_impl: () -> [String, String]?
       private def _disconnect_impl: () -> void
     end

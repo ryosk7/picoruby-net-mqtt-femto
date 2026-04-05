@@ -15,6 +15,7 @@ extern int MQTT_is_connected_impl(void);
 extern int MQTT_publish_impl(const char *topic, const char *payload, int len,
                              int retain);
 extern int MQTT_subscribe_impl(const char *topic);
+extern int MQTT_unsubscribe_impl(const char *topic);
 extern int MQTT_get_message_impl(char **topic, char **payload);
 extern void MQTT_disconnect_impl(void);
 
@@ -148,6 +149,30 @@ c_mqtt_get_message(mrbc_vm *vm, mrbc_value v[], int argc)
 }
 
 static void
+c_mqtt_unsubscribe(mrbc_vm *vm, mrbc_value v[], int argc)
+{
+  if (argc != 1) {
+    SET_FALSE_RETURN();
+    return;
+  }
+
+  if (v[1].tt != MRBC_TT_STRING) {
+    SET_FALSE_RETURN();
+    return;
+  }
+
+  const char *topic = (const char *)GET_STRING_ARG(1);
+
+  int result = MQTT_unsubscribe_impl(topic);
+
+  if (result == 0) {
+    SET_TRUE_RETURN();
+  } else {
+    SET_FALSE_RETURN();
+  }
+}
+
+static void
 c_mqtt_is_connected(mrbc_vm *vm, mrbc_value v[], int argc)
 {
   int connected = MQTT_is_connected_impl();
@@ -190,6 +215,7 @@ void mrbc_net_mqtt_femto_init(mrbc_vm *vm) {
   mrbc_define_method(0, mrbc_class_object, "_poll_sleep_impl", c_mqtt_poll_sleep);
   mrbc_define_method(0, mrbc_class_object, "_publish_impl", c_mqtt_publish);
   mrbc_define_method(0, mrbc_class_object, "_subscribe_impl", c_mqtt_subscribe);
+  mrbc_define_method(0, mrbc_class_object, "_unsubscribe_impl", c_mqtt_unsubscribe);
   mrbc_define_method(0, mrbc_class_object, "_get_message_impl", c_mqtt_get_message);
   mrbc_define_method(0, mrbc_class_object, "_disconnect_impl", c_mqtt_disconnect);
 }
