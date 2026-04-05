@@ -162,6 +162,34 @@ module Net
         end
       end
 
+      def wait_until_connected(timeout_ms: 3_000, poll_interval_ms: 10)
+        raise MQTTError.new("timeout_ms must be non-negative") if timeout_ms < 0
+        raise MQTTError.new("poll_interval_ms must be positive") if poll_interval_ms <= 0
+
+        waited_ms = 0
+        while waited_ms <= timeout_ms
+          return true if connected?
+          poll_sleep_ms(poll_interval_ms)
+          waited_ms += poll_interval_ms
+        end
+
+        false
+      end
+
+      def wait_until_disconnected(timeout_ms: 3_000, poll_interval_ms: 10)
+        raise MQTTError.new("timeout_ms must be non-negative") if timeout_ms < 0
+        raise MQTTError.new("poll_interval_ms must be positive") if poll_interval_ms <= 0
+
+        waited_ms = 0
+        while waited_ms <= timeout_ms
+          return true unless connected?
+          poll_sleep_ms(poll_interval_ms)
+          waited_ms += poll_interval_ms
+        end
+
+        false
+      end
+
       def with_reconnect(max_attempts: nil, base_delay_ms: 100, max_delay_ms: 5_000)
         raise ArgumentError, "block required" unless block_given?
 
