@@ -68,8 +68,8 @@ require 'net/mqtt'
 client = Net::MQTT::Client.new("test.mosquitto.org", 1883)
 client.connect
 
-# Subscribe to a topic
-client.subscribe("sensors/#")
+# Subscribe to topics
+client.subscribe("sensors/#", "alerts/#")
 
 # Receive messages
 5.times do

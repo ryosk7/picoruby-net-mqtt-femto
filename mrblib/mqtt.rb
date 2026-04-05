@@ -135,8 +135,9 @@ module Net
       def subscribe(*topics, qos: 0)
         raise MQTTError.new("Not connected") unless @connected
         raise MQTTError.new("QoS must be 0") if qos != 0
-        raise MQTTError.new("Only one topic supported") if topics.length != 1
-        _subscribe_impl(topics[0])
+        topics.each do |topic|
+          _subscribe_impl(topic)
+        end
       end
 
       def unsubscribe(*topics)
