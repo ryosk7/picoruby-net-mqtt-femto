@@ -331,6 +331,14 @@ module Net
         @subscriptions.dup
       end
 
+      def subscribed?(topic)
+        @subscriptions.key?(topic)
+      end
+
+      def subscription_qos(topic)
+        @subscriptions[topic]
+      end
+
       def stats
         {
           connected: connected?,
