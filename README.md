@@ -61,6 +61,22 @@ client.publish("sensors/temperature", "25.5")
 client.disconnect
 ```
 
+### Reconnect With Backoff
+
+```ruby
+require 'net/mqtt'
+
+client = Net::MQTT::Client.new("test.mosquitto.org", 1883)
+client.connect
+
+begin
+  client.publish("sensors/temperature", "25.5", qos: 1)
+rescue Net::MQTT::ConnectionError
+  client.reconnect(max_attempts: 5, base_delay_ms: 200, max_delay_ms: 2_000)
+  retry
+end
+```
+
 ### Subscribe to Topics
 
 ```ruby

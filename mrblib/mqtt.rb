@@ -122,6 +122,29 @@ module Net
         @connected = false
       end
 
+      def reconnect(max_attempts: nil, base_delay_ms: 100, max_delay_ms: 5_000)
+        raise MQTTError.new("base_delay_ms must be positive") if base_delay_ms <= 0
+        raise MQTTError.new("max_delay_ms must be positive") if max_delay_ms <= 0
+
+        disconnect if connected?
+
+        attempts = 0
+        delay_ms = base_delay_ms
+
+        loop do
+          attempts += 1
+
+          begin
+            return connect
+          rescue ConnectionError
+            raise if max_attempts && attempts >= max_attempts
+          end
+
+          poll_sleep_ms(delay_ms)
+          delay_ms = [delay_ms * 2, max_delay_ms].min
+        end
+      end
+
       def connected?
         return false unless @connected
 
