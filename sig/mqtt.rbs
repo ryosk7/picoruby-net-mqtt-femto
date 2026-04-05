@@ -11,6 +11,8 @@ module Net
       def receive_with_reconnect: (?timeout: untyped, ?max_attempts: Integer?, ?base_delay_ms: Integer, ?max_delay_ms: Integer) -> [String, String]?
       def receive_with_reconnect: (?timeout: untyped, ?max_attempts: Integer?, ?base_delay_ms: Integer, ?max_delay_ms: Integer) { (String, String) -> untyped } -> untyped
       def connection_status: () -> Integer
+      def connection_status_name: () -> String
+      def connection_error?: () -> bool
       def native_state: () -> String
       def receive_queue_size: () -> Integer
       def message_available?: () -> bool

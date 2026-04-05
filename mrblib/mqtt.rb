@@ -269,6 +269,14 @@ module Net
         _connection_status_impl
       end
 
+      def connection_status_name
+        connection_error_message("ok")
+      end
+
+      def connection_error?
+        connection_status != 0
+      end
+
       def native_state
         STATE_NAMES[_fsm_state_impl] || "unknown"
       end
@@ -312,6 +320,8 @@ module Net
           connected: connected?,
           native_state: native_state,
           connection_status: connection_status,
+          connection_status_name: connection_status_name,
+          connection_error: connection_error?,
           receive_queue_size: receive_queue_size,
           message_available: message_available?,
           pending_publish_topic: pending_publish_topic,
