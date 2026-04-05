@@ -18,6 +18,8 @@ module Net
       def active?: () -> bool
       def disconnecting?: () -> bool
       def timed_out?: () -> bool
+      def publishing?: () -> bool
+      def subscribing?: () -> bool
       def receive_queue_size: () -> Integer
       def message_available?: () -> bool
       def drain_messages: () -> Array[[String, String]]

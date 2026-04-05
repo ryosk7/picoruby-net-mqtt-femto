@@ -297,6 +297,14 @@ module Net
         native_state == "timeout"
       end
 
+      def publishing?
+        native_state == "publishing"
+      end
+
+      def subscribing?
+        native_state == "subscribing"
+      end
+
       def receive_queue_size
         _receive_queue_size_impl
       end
@@ -347,6 +355,8 @@ module Net
           active: active?,
           disconnecting: disconnecting?,
           timed_out: timed_out?,
+          publishing: publishing?,
+          subscribing: subscribing?,
           connection_status: connection_status,
           connection_status_name: connection_status_name,
           connection_error: connection_error?,
