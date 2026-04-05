@@ -277,6 +277,20 @@ module Net
         _receive_queue_size_impl
       end
 
+      def message_available?
+        receive_queue_size > 0
+      end
+
+      def drain_messages
+        messages = []
+
+        while (message = _get_message_impl)
+          messages << message
+        end
+
+        messages
+      end
+
       def pending_publish_topic
         _pending_publish_topic_impl
       end
@@ -299,6 +313,7 @@ module Net
           native_state: native_state,
           connection_status: connection_status,
           receive_queue_size: receive_queue_size,
+          message_available: message_available?,
           pending_publish_topic: pending_publish_topic,
           pending_publish_qos: pending_publish_qos,
           pending_subscribe_topic: pending_subscribe_topic,

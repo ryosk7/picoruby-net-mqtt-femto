@@ -13,6 +13,8 @@ module Net
       def connection_status: () -> Integer
       def native_state: () -> String
       def receive_queue_size: () -> Integer
+      def message_available?: () -> bool
+      def drain_messages: () -> Array[[String, String]]
       def pending_publish_topic: () -> String?
       def pending_publish_qos: () -> Integer
       def pending_subscribe_topic: () -> String?
