@@ -17,6 +17,9 @@ extern int MQTT_is_connected_impl(void);
 extern int MQTT_connection_status_impl(void);
 extern int MQTT_fsm_state_impl(void);
 extern int MQTT_receive_queue_size_impl(void);
+extern const char *MQTT_pending_publish_topic_impl(void);
+extern int MQTT_pending_publish_qos_impl(void);
+extern const char *MQTT_pending_subscribe_topic_impl(void);
 extern int MQTT_publish_impl(const char *topic, const char *payload, int len,
                              int qos, int retain);
 extern int MQTT_subscribe_impl(const char *topic, int qos);
@@ -234,6 +237,34 @@ c_mqtt_receive_queue_size(mrbc_vm *vm, mrbc_value v[], int argc)
 }
 
 static void
+c_mqtt_pending_publish_topic(mrbc_vm *vm, mrbc_value v[], int argc)
+{
+  const char *topic = MQTT_pending_publish_topic_impl();
+  if (topic) {
+    SET_RETURN(mrbc_string_new_cstr(vm, topic));
+  } else {
+    SET_NIL_RETURN();
+  }
+}
+
+static void
+c_mqtt_pending_publish_qos(mrbc_vm *vm, mrbc_value v[], int argc)
+{
+  SET_INT_RETURN(MQTT_pending_publish_qos_impl());
+}
+
+static void
+c_mqtt_pending_subscribe_topic(mrbc_vm *vm, mrbc_value v[], int argc)
+{
+  const char *topic = MQTT_pending_subscribe_topic_impl();
+  if (topic) {
+    SET_RETURN(mrbc_string_new_cstr(vm, topic));
+  } else {
+    SET_NIL_RETURN();
+  }
+}
+
+static void
 c_mqtt_poll(mrbc_vm *vm, mrbc_value v[], int argc)
 {
   MQTT_poll_impl();
@@ -266,6 +297,12 @@ void mrbc_net_mqtt_femto_init(mrbc_vm *vm) {
   mrbc_define_method(0, mrbc_class_object, "_fsm_state_impl", c_mqtt_fsm_state);
   mrbc_define_method(0, mrbc_class_object, "_receive_queue_size_impl",
                      c_mqtt_receive_queue_size);
+  mrbc_define_method(0, mrbc_class_object, "_pending_publish_topic_impl",
+                     c_mqtt_pending_publish_topic);
+  mrbc_define_method(0, mrbc_class_object, "_pending_publish_qos_impl",
+                     c_mqtt_pending_publish_qos);
+  mrbc_define_method(0, mrbc_class_object, "_pending_subscribe_topic_impl",
+                     c_mqtt_pending_subscribe_topic);
   mrbc_define_method(0, mrbc_class_object, "_poll_impl", c_mqtt_poll);
   mrbc_define_method(0, mrbc_class_object, "_poll_sleep_impl", c_mqtt_poll_sleep);
   mrbc_define_method(0, mrbc_class_object, "_publish_impl", c_mqtt_publish);

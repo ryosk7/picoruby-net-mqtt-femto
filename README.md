@@ -140,6 +140,9 @@ client.connect
 puts client.native_state
 puts client.connection_status
 puts client.receive_queue_size
+puts client.pending_publish_topic
+puts client.pending_publish_qos
+puts client.pending_subscribe_topic
 pp client.stats
 pp client.subscriptions
 ```
