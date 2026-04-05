@@ -77,6 +77,57 @@ rescue Net::MQTT::ConnectionError
 end
 ```
 
+### Wrap Operations With Reconnect
+
+```ruby
+require 'net/mqtt'
+
+client = Net::MQTT::Client.new("test.mosquitto.org", 1883)
+client.connect
+
+client.with_reconnect(max_attempts: 3, base_delay_ms: 200) do |mqtt|
+  mqtt.publish("sensors/temperature", "25.5", qos: 1)
+end
+```
+
+### Restore Subscriptions After Reconnect
+
+```ruby
+require 'net/mqtt'
+
+client = Net::MQTT::Client.new("test.mosquitto.org", 1883)
+client.connect
+client.subscribe("sensors/#", qos: 1)
+
+client.reconnect
+# previously subscribed topics are subscribed again automatically
+```
+
+### Receive With Reconnect
+
+```ruby
+require 'net/mqtt'
+
+client = Net::MQTT::Client.new("test.mosquitto.org", 1883)
+client.connect
+client.subscribe("sensors/#", qos: 1)
+
+topic, payload = client.receive_with_reconnect(timeout: 5, max_attempts: 3)
+puts "#{topic}: #{payload}"
+```
+
+### Publish And Subscribe With Reconnect
+
+```ruby
+require 'net/mqtt'
+
+client = Net::MQTT::Client.new("test.mosquitto.org", 1883)
+client.connect
+
+client.subscribe_with_reconnect("sensors/#", qos: 1, max_attempts: 3)
+client.publish_with_reconnect("sensors/temperature", "25.5", qos: 1, max_attempts: 3)
+```
+
 ### Subscribe to Topics
 
 ```ruby

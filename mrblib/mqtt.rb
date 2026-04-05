@@ -34,6 +34,7 @@ module Net
       attr_accessor :client_id, :keep_alive, :clean_session
       attr_accessor :username, :password
       attr_accessor :will_topic, :will_message, :will_qos, :will_retain
+      attr_accessor :auto_resubscribe
       attr_accessor :ssl, :ca_file, :cert_file, :key_file
 
       def initialize(host, port = 1883, **options)
@@ -47,11 +48,13 @@ module Net
         @will_message = options[:will_message]
         @will_qos = options[:will_qos] || 0
         @will_retain = options[:will_retain] || false
+        @auto_resubscribe = options.key?(:auto_resubscribe) ? options[:auto_resubscribe] : true
         @ssl = options[:ssl] || false # not work
         @ca_file = options[:ca_file] # not work
         @cert_file = options[:cert_file] # not work
         @key_file = options[:key_file] # not work
         @connected = false
+        @subscriptions = {}
       end
 
       def self.connect(host, port = 1883, **options, &block)
@@ -135,13 +138,74 @@ module Net
           attempts += 1
 
           begin
-            return connect
+            connect
+            restore_subscriptions if @auto_resubscribe
+            return true
           rescue ConnectionError
             raise if max_attempts && attempts >= max_attempts
           end
 
           poll_sleep_ms(delay_ms)
           delay_ms = [delay_ms * 2, max_delay_ms].min
+        end
+      end
+
+      def with_reconnect(max_attempts: nil, base_delay_ms: 100, max_delay_ms: 5_000)
+        raise ArgumentError, "block required" unless block_given?
+
+        attempts = 0
+
+        loop do
+          begin
+            return yield self
+          rescue ConnectionError
+            attempts += 1
+            raise if max_attempts && attempts > max_attempts
+
+            reconnect(max_attempts: 1, base_delay_ms: base_delay_ms,
+                      max_delay_ms: max_delay_ms)
+          end
+        end
+      end
+
+      def receive_with_reconnect(timeout: nil, max_attempts: nil,
+                                 base_delay_ms: 100, max_delay_ms: 5_000, &block)
+        if block_given?
+          loop do
+            message = with_reconnect(max_attempts: max_attempts,
+                                     base_delay_ms: base_delay_ms,
+                                     max_delay_ms: max_delay_ms) do |mqtt|
+              mqtt.receive(timeout: timeout)
+            end
+
+            next unless message
+
+            yield(message[0], message[1])
+          end
+        else
+          with_reconnect(max_attempts: max_attempts,
+                         base_delay_ms: base_delay_ms,
+                         max_delay_ms: max_delay_ms) do |mqtt|
+            mqtt.receive(timeout: timeout)
+          end
+        end
+      end
+
+      def publish_with_reconnect(topic, payload, retain: false, qos: 0,
+                                 max_attempts: nil, base_delay_ms: 100, max_delay_ms: 5_000)
+        with_reconnect(max_attempts: max_attempts,
+                       base_delay_ms: base_delay_ms,
+                       max_delay_ms: max_delay_ms) do |mqtt|
+          mqtt.publish(topic, payload, retain: retain, qos: qos)
+        end
+      end
+
+      def subscribe_with_reconnect(*topics, qos: 0, max_attempts: nil,
+                                   base_delay_ms: 100, max_delay_ms: 5_000)
+        with_reconnect(max_attempts: max_attempts,
+                       base_delay_ms: base_delay_ms,
+                       max_delay_ms: max_delay_ms) do |mqtt|
+          mqtt.subscribe(*topics, qos: qos)
         end
       end
 
@@ -162,6 +226,7 @@ module Net
         raise MQTTError.new("Not connected") unless connected?
         raise MQTTError.new("QoS must be 0 or 1") unless [0, 1].include?(qos)
         topics.each do |topic|
+          @subscriptions[topic] = qos
           _subscribe_impl(topic, qos)
         end
       end
@@ -169,6 +234,7 @@ module Net
       def unsubscribe(*topics)
         raise MQTTError.new("Not connected") unless connected?
         raise MQTTError.new("Only one topic supported") if topics.length != 1
+        @subscriptions.delete(topics[0])
         _unsubscribe_impl(topics[0])
       end
 
@@ -216,6 +282,12 @@ module Net
 
       def connection_error_message(default = "Connection failed")
         CONNECTION_ERRORS[_connection_status_impl] || default
+      end
+
+      def restore_subscriptions
+        @subscriptions.each do |topic, qos|
+          _subscribe_impl(topic, qos)
+        end
       end
     end
   end
