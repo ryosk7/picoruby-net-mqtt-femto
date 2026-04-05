@@ -112,7 +112,6 @@ This gem provides the same `Net::MQTT` module and client API surface as picoruby
 - QoS 0
 
 ### Planned
-- `retain` flag
 - `unsubscribe`
 - QoS 1
 - QoS 2

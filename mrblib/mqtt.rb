@@ -106,8 +106,7 @@ module Net
       def publish(topic, payload, retain: false, qos: 0)
         raise MQTTError.new("Not connected") unless @connected
         raise MQTTError.new("QoS must be 0") if qos != 0
-        raise MQTTError.new("Retain not supported") if retain
-        _publish_impl(topic, payload.to_s)
+        _publish_impl(topic, payload.to_s, retain)
       end
 
       def subscribe(*topics, qos: 0)

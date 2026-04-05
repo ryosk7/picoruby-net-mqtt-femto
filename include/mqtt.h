@@ -34,6 +34,7 @@ typedef struct {
   char topic_to_pub[MQTT_TOPIC_MAX_LEN];
   char payload_to_pub[MQTT_PAYLOAD_MAX_LEN];
   int payload_to_pub_len;
+  int publish_retain;
 
   char recv_topic[MQTT_TOPIC_MAX_LEN];
   char recv_payload[MQTT_PAYLOAD_MAX_LEN];
@@ -52,7 +53,8 @@ void MQTT_poll_impl(void);
 void MQTT_poll_sleep_impl(int ms);
 int MQTT_is_connected_impl(void);
 int MQTT_subscribe_impl(const char *topic);
-int MQTT_publish_impl(const char *topic, const char *payload, int len);
+int MQTT_publish_impl(const char *topic, const char *payload, int len,
+                      int retain);
 void MQTT_disconnect_impl(void);
 int MQTT_get_message_impl(char **topic, char **payload);
 

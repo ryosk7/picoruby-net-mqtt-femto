@@ -58,7 +58,8 @@ static bool poll_state() {
       g_ctx.fsm_state = MQTT_STATE_PUBLISHING;
       lwip_begin();
       mqtt_publish((mqtt_client_t*)g_ctx.client, g_ctx.topic_to_pub, g_ctx.payload_to_pub,
-                   g_ctx.payload_to_pub_len, 0, 0, mqtt_request_cb, &g_ctx);
+                   g_ctx.payload_to_pub_len, 0, g_ctx.publish_retain,
+                   mqtt_request_cb, &g_ctx);
       lwip_end();
       g_ctx.topic_to_pub[0] = '\0';
     }
@@ -199,7 +200,8 @@ int MQTT_connect_impl(const char *host, int port, const char *client_id,
   return 0;
 }
 
-int MQTT_publish_impl(const char *topic, const char *payload, int len) {
+int MQTT_publish_impl(const char *topic, const char *payload, int len,
+                      int retain) {
   if (g_ctx.fsm_state != MQTT_STATE_ACTIVE) {
     return -1;
   }
@@ -210,6 +212,7 @@ int MQTT_publish_impl(const char *topic, const char *payload, int len) {
   strncpy(g_ctx.payload_to_pub, payload, sizeof(g_ctx.payload_to_pub) - 1);
   g_ctx.payload_to_pub[sizeof(g_ctx.payload_to_pub) - 1] = '\0';
   g_ctx.payload_to_pub_len = (len > 0) ? len : strlen(g_ctx.payload_to_pub);
+  g_ctx.publish_retain = retain ? 1 : 0;
 
   // Poll state will handle the actual publishing
   int timeout = 100;
