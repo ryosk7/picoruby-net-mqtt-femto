@@ -342,12 +342,20 @@ module Net
         _pending_publish_topic_impl
       end
 
+      def pending_publish?
+        !pending_publish_topic.nil?
+      end
+
       def pending_publish_qos
         _pending_publish_qos_impl
       end
 
       def pending_subscribe_topic
         _pending_subscribe_topic_impl
+      end
+
+      def pending_subscribe?
+        !pending_subscribe_topic.nil?
       end
 
       def subscriptions
@@ -377,8 +385,10 @@ module Net
           connection_error: connection_error?,
           receive_queue_size: receive_queue_size,
           message_available: message_available?,
+          pending_publish: pending_publish?,
           pending_publish_topic: pending_publish_topic,
           pending_publish_qos: pending_publish_qos,
+          pending_subscribe: pending_subscribe?,
           pending_subscribe_topic: pending_subscribe_topic,
           subscriptions: subscriptions.length,
           auto_resubscribe: @auto_resubscribe,
