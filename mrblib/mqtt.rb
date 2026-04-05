@@ -370,6 +370,10 @@ module Net
         @subscriptions[topic]
       end
 
+      def subscription_count
+        @subscriptions.length
+      end
+
       def stats
         {
           connected: connected?,
@@ -390,7 +394,7 @@ module Net
           pending_publish_qos: pending_publish_qos,
           pending_subscribe: pending_subscribe?,
           pending_subscribe_topic: pending_subscribe_topic,
-          subscriptions: subscriptions.length,
+          subscriptions: subscription_count,
           auto_resubscribe: @auto_resubscribe,
         }
       end

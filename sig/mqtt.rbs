@@ -32,6 +32,7 @@ module Net
       def subscriptions: () -> Hash[String, Integer]
       def subscribed?: (String) -> bool
       def subscription_qos: (String) -> Integer?
+      def subscription_count: () -> Integer
       def stats: () -> Hash[Symbol, untyped]
       attr_accessor auto_resubscribe: bool
 
