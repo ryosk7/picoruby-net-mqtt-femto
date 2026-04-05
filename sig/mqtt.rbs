@@ -4,6 +4,7 @@ module Net
       def poll_sleep_ms: (Integer) -> void
 
       private def _connect_impl: (String, Integer, String, Integer, String?, String?, String?, String?, Integer, bool) -> bool
+      private def _connection_status_impl: () -> Integer
       private def _poll_impl: () -> void
       private def _poll_sleep_impl: (Integer) -> void
       private def _is_connected_impl: () -> bool

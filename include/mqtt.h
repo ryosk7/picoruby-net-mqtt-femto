@@ -41,6 +41,7 @@ typedef struct {
   int recv_payload_len;
   bool message_arrived;
   char client_id[MQTT_CLIENT_ID_MAX_LEN];
+  int connection_status;
 
   void *vm;           // VM pointer (platform-specific)
   void *callback_proc; // Callback procedure (platform-specific)
@@ -54,6 +55,7 @@ int MQTT_connect_impl(const char *host, int port, const char *client_id,
 void MQTT_poll_impl(void);
 void MQTT_poll_sleep_impl(int ms);
 int MQTT_is_connected_impl(void);
+int MQTT_connection_status_impl(void);
 int MQTT_subscribe_impl(const char *topic);
 int MQTT_unsubscribe_impl(const char *topic);
 int MQTT_publish_impl(const char *topic, const char *payload, int len,

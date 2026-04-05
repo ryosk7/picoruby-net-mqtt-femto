@@ -19,6 +19,16 @@ module Net
     PINGRESP    = 13
     DISCONNECT  = 14
 
+    CONNECTION_ERRORS = {
+      1 => "Connection refused: unsupported protocol version",
+      2 => "Connection refused: identifier rejected",
+      3 => "Connection refused: server unavailable",
+      4 => "Connection refused: invalid username or password",
+      5 => "Connection refused: not authorized",
+      256 => "Disconnected by broker",
+      257 => "Connection timed out"
+    }
+
     class Client
       attr_reader :host, :port
       attr_accessor :client_id, :keep_alive, :clean_session
@@ -76,7 +86,7 @@ module Net
         result = _connect_impl(@host, @port, @client_id, @keep_alive,
                                @username, @password, @will_topic,
                                @will_message, @will_qos, @will_retain)
-        raise ConnectionError.new("Connection failed") unless result
+        raise ConnectionError.new(connection_error_message) unless result
 
         # Short test loop (~3 seconds timeout)
         300.times do |i|
@@ -90,7 +100,7 @@ module Net
         end
 
         @connected = false
-        raise ConnectionError.new("Connection timeout")
+        raise ConnectionError.new(connection_error_message("Connection timeout"))
       end
 
       def poll_sleep_ms(ms)
@@ -168,6 +178,12 @@ module Net
           # Blocking
           _get_message_impl
         end
+      end
+
+      private
+
+      def connection_error_message(default = "Connection failed")
+        CONNECTION_ERRORS[_connection_status_impl] || default
       end
     end
   end

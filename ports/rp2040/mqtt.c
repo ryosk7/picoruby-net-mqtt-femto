@@ -86,12 +86,15 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg,
 
   switch (status) {
   case MQTT_CONNECT_ACCEPTED:
+    ctx->connection_status = status;
     ctx->fsm_state = MQTT_STATE_ACTIVE;
     break;
   case MQTT_CONNECT_DISCONNECTED:
+    ctx->connection_status = status;
     ctx->fsm_state = MQTT_STATE_DISCONNECTING;
     break;
   default:
+    ctx->connection_status = status;
     ctx->fsm_state = MQTT_STATE_ERROR;
     break;
   }
@@ -299,6 +302,10 @@ int MQTT_is_connected_impl() {
   poll_state();
 
   return (g_ctx.fsm_state == MQTT_STATE_ACTIVE) ? 1 : 0;
+}
+
+int MQTT_connection_status_impl() {
+  return g_ctx.connection_status;
 }
 
 void MQTT_disconnect_impl() {

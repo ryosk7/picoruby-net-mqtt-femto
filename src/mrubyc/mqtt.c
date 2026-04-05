@@ -14,6 +14,7 @@ extern int MQTT_connect_impl(const char *host, int port, const char *client_id,
 extern void MQTT_poll_impl(void);
 extern void MQTT_poll_sleep_impl(int ms);
 extern int MQTT_is_connected_impl(void);
+extern int MQTT_connection_status_impl(void);
 extern int MQTT_publish_impl(const char *topic, const char *payload, int len,
                              int retain);
 extern int MQTT_subscribe_impl(const char *topic);
@@ -207,6 +208,12 @@ c_mqtt_is_connected(mrbc_vm *vm, mrbc_value v[], int argc)
 }
 
 static void
+c_mqtt_connection_status(mrbc_vm *vm, mrbc_value v[], int argc)
+{
+  SET_INT_RETURN(MQTT_connection_status_impl());
+}
+
+static void
 c_mqtt_poll(mrbc_vm *vm, mrbc_value v[], int argc)
 {
   MQTT_poll_impl();
@@ -234,6 +241,8 @@ c_mqtt_disconnect(mrbc_vm *vm, mrbc_value v[], int argc)
 void mrbc_net_mqtt_femto_init(mrbc_vm *vm) {
   mrbc_define_method(0, mrbc_class_object, "_connect_impl", c_mqtt_connect);
   mrbc_define_method(0, mrbc_class_object, "_is_connected_impl", c_mqtt_is_connected);
+  mrbc_define_method(0, mrbc_class_object, "_connection_status_impl",
+                     c_mqtt_connection_status);
   mrbc_define_method(0, mrbc_class_object, "_poll_impl", c_mqtt_poll);
   mrbc_define_method(0, mrbc_class_object, "_poll_sleep_impl", c_mqtt_poll_sleep);
   mrbc_define_method(0, mrbc_class_object, "_publish_impl", c_mqtt_publish);
