@@ -269,8 +269,32 @@ module Net
         _connection_status_impl
       end
 
+      def connection_status_name
+        connection_error_message("ok")
+      end
+
+      def connection_error?
+        connection_status != 0
+      end
+
       def native_state
         STATE_NAMES[_fsm_state_impl] || "unknown"
+      end
+
+      def connecting?
+        native_state == "connecting" || native_state == "connack_wait"
+      end
+
+      def active?
+        native_state == "active"
+      end
+
+      def disconnecting?
+        native_state == "disconnecting"
+      end
+
+      def timed_out?
+        native_state == "timeout"
       end
 
       def receive_queue_size
@@ -311,7 +335,13 @@ module Net
         {
           connected: connected?,
           native_state: native_state,
+          connecting: connecting?,
+          active: active?,
+          disconnecting: disconnecting?,
+          timed_out: timed_out?,
           connection_status: connection_status,
+          connection_status_name: connection_status_name,
+          connection_error: connection_error?,
           receive_queue_size: receive_queue_size,
           message_available: message_available?,
           pending_publish_topic: pending_publish_topic,

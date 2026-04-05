@@ -151,7 +151,13 @@ client = Net::MQTT::Client.new("test.mosquitto.org", 1883)
 client.connect
 
 puts client.native_state
+puts client.connecting?
+puts client.active?
+puts client.disconnecting?
+puts client.timed_out?
 puts client.connection_status
+puts client.connection_status_name
+puts client.connection_error?
 puts client.receive_queue_size
 puts client.message_available?
 puts client.pending_publish_topic
