@@ -24,9 +24,10 @@ In other words, `picoruby-net-mqtt` is the more portable and Ruby-centric option
 
 - Native lwIP MQTT implementation for better performance
 - MQTT 3.1.1 protocol support
-- QoS 0 (At most once delivery)
+- QoS 0 and QoS 1
 - CONNECT, PUBLISH, SUBSCRIBE, PING, DISCONNECT
 - Keep-alive with automatic PING
+- Small fixed receive queue for bursty incoming messages
 - API compatible with picoruby-net-mqtt (see support status below)
 - Optimized for RP2040 (pico_w) boards
 
@@ -68,8 +69,8 @@ require 'net/mqtt'
 client = Net::MQTT::Client.new("test.mosquitto.org", 1883)
 client.connect
 
-# Subscribe to a topic
-client.subscribe("sensors/#")
+# Subscribe to topics
+client.subscribe("sensors/#", "alerts/#")
 
 # Receive messages
 5.times do
@@ -97,11 +98,10 @@ client.disconnect
 ## API Compatibility
 
 This gem provides the same `Net::MQTT` module and client API surface as picoruby-net-mqtt. Feature support differs:
-- QoS 0 only (higher QoS not supported yet)
+- QoS 0 and QoS 1 are supported
 - TLS/SSL is not supported
-- username/password authentication is not supported yet
-- `keep_alive` and `clean_session` options are currently ignored (keep-alive is fixed at 60s)
-- `unsubscribe` and `ping` raise "not supported"
+- `clean_session` option is currently ignored
+- `ping` raises "not supported"
 
 ## Support Status
 
@@ -111,13 +111,9 @@ This gem provides the same `Net::MQTT` module and client API surface as picoruby
 - PINGREQ / PINGRESP (automatic keep-alive)
 - DISCONNECT
 - QoS 0
+- QoS 1
 
 ### Planned
-- `keep_alive` option (set keep-alive value from Ruby)
-- `username` / `password` authentication
-- `retain` flag
-- `unsubscribe`
-- QoS 1
 - QoS 2
 
 ### Not Planned

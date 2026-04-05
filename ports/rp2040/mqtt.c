@@ -21,6 +21,7 @@ static void mqtt_incoming_publish_cb(void *arg, const char *topic,
 static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len,
                                   u8_t flags);
 static void mqtt_request_cb(void *arg, err_t err);
+static void mqtt_enqueue_message(mqtt_context_t *ctx);
 
 void MQTT_poll_impl(void) {
   for (int i = 0; i < 3; i++) {
@@ -50,15 +51,16 @@ static bool poll_state() {
     if (g_ctx.topic_to_sub[0] != '\0') {
       g_ctx.fsm_state = MQTT_STATE_SUBSCRIBING;
       lwip_begin();
-      mqtt_subscribe((mqtt_client_t*)g_ctx.client, g_ctx.topic_to_sub, 0, mqtt_request_cb,
-                     &g_ctx);
+      mqtt_subscribe((mqtt_client_t*)g_ctx.client, g_ctx.topic_to_sub,
+                     g_ctx.subscribe_qos, mqtt_request_cb, &g_ctx);
       lwip_end();
       g_ctx.topic_to_sub[0] = '\0';
     } else if (g_ctx.topic_to_pub[0] != '\0') {
       g_ctx.fsm_state = MQTT_STATE_PUBLISHING;
       lwip_begin();
       mqtt_publish((mqtt_client_t*)g_ctx.client, g_ctx.topic_to_pub, g_ctx.payload_to_pub,
-                   g_ctx.payload_to_pub_len, 0, 0, mqtt_request_cb, &g_ctx);
+                   g_ctx.payload_to_pub_len, g_ctx.publish_qos, g_ctx.publish_retain,
+                   mqtt_request_cb, &g_ctx);
       lwip_end();
       g_ctx.topic_to_pub[0] = '\0';
     }
@@ -85,12 +87,15 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg,
 
   switch (status) {
   case MQTT_CONNECT_ACCEPTED:
+    ctx->connection_status = status;
     ctx->fsm_state = MQTT_STATE_ACTIVE;
     break;
   case MQTT_CONNECT_DISCONNECTED:
+    ctx->connection_status = status;
     ctx->fsm_state = MQTT_STATE_DISCONNECTING;
     break;
   default:
+    ctx->connection_status = status;
     ctx->fsm_state = MQTT_STATE_ERROR;
     break;
   }
@@ -123,8 +128,26 @@ static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len,
   ctx->recv_payload[ctx->recv_payload_len] = '\0';
 
   if (flags & MQTT_DATA_FLAG_LAST) {
-    ctx->message_arrived = true;
+    mqtt_enqueue_message(ctx);
   }
+}
+
+static void mqtt_enqueue_message(mqtt_context_t *ctx) {
+  mqtt_message_t *slot;
+
+  if (ctx->recv_queue_count >= MQTT_RECEIVE_QUEUE_LEN) {
+    ctx->recv_queue_head = (ctx->recv_queue_head + 1) % MQTT_RECEIVE_QUEUE_LEN;
+    ctx->recv_queue_count--;
+  }
+
+  slot = &ctx->recv_queue[ctx->recv_queue_tail];
+  strncpy(slot->topic, ctx->recv_topic, sizeof(slot->topic) - 1);
+  slot->topic[sizeof(slot->topic) - 1] = '\0';
+  strncpy(slot->payload, ctx->recv_payload, sizeof(slot->payload) - 1);
+  slot->payload[sizeof(slot->payload) - 1] = '\0';
+
+  ctx->recv_queue_tail = (ctx->recv_queue_tail + 1) % MQTT_RECEIVE_QUEUE_LEN;
+  ctx->recv_queue_count++;
 }
 
 static void mqtt_request_cb(void *arg, err_t err) {
@@ -150,7 +173,11 @@ static void mqtt_request_cb(void *arg, err_t err) {
   }
 }
 
-int MQTT_connect_impl(const char *host, int port, const char *client_id) {
+int MQTT_connect_impl(const char *host, int port, const char *client_id,
+                      int keep_alive, const char *username,
+                      const char *password, const char *will_topic,
+                      const char *will_message, int will_qos,
+                      int will_retain) {
   memset(&g_ctx, 0, sizeof(g_ctx));
 
   ip_addr_t ip;
@@ -170,7 +197,13 @@ int MQTT_connect_impl(const char *host, int port, const char *client_id) {
   strncpy(g_ctx.client_id, client_id, sizeof(g_ctx.client_id) - 1);
   g_ctx.client_id[sizeof(g_ctx.client_id) - 1] = '\0';
   client_info.client_id = g_ctx.client_id;
-  client_info.keep_alive = 60;
+  client_info.keep_alive = (u16_t)keep_alive;
+  client_info.client_user = username;
+  client_info.client_pass = password;
+  client_info.will_topic = will_topic;
+  client_info.will_msg = will_message;
+  client_info.will_qos = (u8_t)will_qos;
+  client_info.will_retain = (u8_t)(will_retain ? 1 : 0);
 
   lwip_begin();
   mqtt_set_inpub_callback((mqtt_client_t*)g_ctx.client, mqtt_incoming_publish_cb,
@@ -195,7 +228,8 @@ int MQTT_connect_impl(const char *host, int port, const char *client_id) {
   return 0;
 }
 
-int MQTT_publish_impl(const char *topic, const char *payload, int len) {
+int MQTT_publish_impl(const char *topic, const char *payload, int len,
+                      int qos, int retain) {
   if (g_ctx.fsm_state != MQTT_STATE_ACTIVE) {
     return -1;
   }
@@ -206,6 +240,8 @@ int MQTT_publish_impl(const char *topic, const char *payload, int len) {
   strncpy(g_ctx.payload_to_pub, payload, sizeof(g_ctx.payload_to_pub) - 1);
   g_ctx.payload_to_pub[sizeof(g_ctx.payload_to_pub) - 1] = '\0';
   g_ctx.payload_to_pub_len = (len > 0) ? len : strlen(g_ctx.payload_to_pub);
+  g_ctx.publish_qos = qos;
+  g_ctx.publish_retain = retain ? 1 : 0;
 
   // Poll state will handle the actual publishing
   int timeout = 100;
@@ -217,13 +253,14 @@ int MQTT_publish_impl(const char *topic, const char *payload, int len) {
   return (g_ctx.topic_to_pub[0] == '\0') ? 0 : -1;
 }
 
-int MQTT_subscribe_impl(const char *topic) {
+int MQTT_subscribe_impl(const char *topic, int qos) {
   if (g_ctx.fsm_state != MQTT_STATE_ACTIVE) {
     return -1;
   }
 
   strncpy(g_ctx.topic_to_sub, topic, sizeof(g_ctx.topic_to_sub) - 1);
   g_ctx.topic_to_sub[sizeof(g_ctx.topic_to_sub) - 1] = '\0';
+  g_ctx.subscribe_qos = qos;
 
   // Poll state will handle the actual subscribing
   int timeout = 100;
@@ -235,17 +272,43 @@ int MQTT_subscribe_impl(const char *topic) {
   return (g_ctx.topic_to_sub[0] == '\0') ? 0 : -1;
 }
 
-int MQTT_get_message_impl(char **topic, char **payload) {
-  poll_state();
-
-  if (!g_ctx.message_arrived) {
+int MQTT_unsubscribe_impl(const char *topic) {
+  if (g_ctx.fsm_state != MQTT_STATE_ACTIVE) {
     return -1;
   }
 
-  *topic = g_ctx.recv_topic;
-  *payload = g_ctx.recv_payload;
+  g_ctx.fsm_state = MQTT_STATE_SUBSCRIBING;
 
-  g_ctx.message_arrived = false;
+  lwip_begin();
+  err_t err = mqtt_unsubscribe((mqtt_client_t*)g_ctx.client, topic, mqtt_request_cb, &g_ctx);
+  lwip_end();
+
+  if (err != ERR_OK) {
+    g_ctx.fsm_state = MQTT_STATE_ERROR;
+    return -1;
+  }
+
+  int timeout = 100;
+  while (g_ctx.fsm_state == MQTT_STATE_SUBSCRIBING && timeout-- > 0) {
+    if (!poll_state()) return -1;
+    Net_busy_wait_ms(10);
+  }
+
+  return (g_ctx.fsm_state == MQTT_STATE_ACTIVE) ? 0 : -1;
+}
+
+int MQTT_get_message_impl(char **topic, char **payload) {
+  poll_state();
+
+  if (g_ctx.recv_queue_count == 0) {
+    return -1;
+  }
+
+  *topic = g_ctx.recv_queue[g_ctx.recv_queue_head].topic;
+  *payload = g_ctx.recv_queue[g_ctx.recv_queue_head].payload;
+
+  g_ctx.recv_queue_head = (g_ctx.recv_queue_head + 1) % MQTT_RECEIVE_QUEUE_LEN;
+  g_ctx.recv_queue_count--;
   return 0;
 }
 
@@ -261,6 +324,10 @@ int MQTT_is_connected_impl() {
   poll_state();
 
   return (g_ctx.fsm_state == MQTT_STATE_ACTIVE) ? 1 : 0;
+}
+
+int MQTT_connection_status_impl() {
+  return g_ctx.connection_status;
 }
 
 void MQTT_disconnect_impl() {

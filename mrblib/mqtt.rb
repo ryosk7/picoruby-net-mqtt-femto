@@ -19,10 +19,21 @@ module Net
     PINGRESP    = 13
     DISCONNECT  = 14
 
+    CONNECTION_ERRORS = {
+      1 => "Connection refused: unsupported protocol version",
+      2 => "Connection refused: identifier rejected",
+      3 => "Connection refused: server unavailable",
+      4 => "Connection refused: invalid username or password",
+      5 => "Connection refused: not authorized",
+      256 => "Disconnected by broker",
+      257 => "Connection timed out"
+    }
+
     class Client
       attr_reader :host, :port
       attr_accessor :client_id, :keep_alive, :clean_session
       attr_accessor :username, :password
+      attr_accessor :will_topic, :will_message, :will_qos, :will_retain
       attr_accessor :ssl, :ca_file, :cert_file, :key_file
 
       def initialize(host, port = 1883, **options)
@@ -32,6 +43,10 @@ module Net
         @keep_alive = options[:keep_alive] || 60
         @username = options[:username] # not work
         @password = options[:password] # not work
+        @will_topic = options[:will_topic]
+        @will_message = options[:will_message]
+        @will_qos = options[:will_qos] || 0
+        @will_retain = options[:will_retain] || false
         @ssl = options[:ssl] || false # not work
         @ca_file = options[:ca_file] # not work
         @cert_file = options[:cert_file] # not work
@@ -57,13 +72,21 @@ module Net
         if @ssl
           raise MQTTError.new("TLS not supported")
         end
-        if @username || @password
-          raise MQTTError.new("username/password not supported")
+        if @keep_alive < 0 || @keep_alive > 65_535
+          raise MQTTError.new("keep_alive must be between 0 and 65535")
+        end
+        if @will_qos < 0 || @will_qos > 2
+          raise MQTTError.new("will_qos must be between 0 and 2")
+        end
+        if @will_topic.nil? != @will_message.nil?
+          raise MQTTError.new("will_topic and will_message must be set together")
         end
 
         # Initiate non-blocking connection
-        result = _connect_impl(@host, @port, @client_id)
-        raise ConnectionError.new("Connection failed") unless result
+        result = _connect_impl(@host, @port, @client_id, @keep_alive,
+                               @username, @password, @will_topic,
+                               @will_message, @will_qos, @will_retain)
+        raise ConnectionError.new(connection_error_message) unless result
 
         # Short test loop (~3 seconds timeout)
         300.times do |i|
@@ -77,7 +100,7 @@ module Net
         end
 
         @connected = false
-        raise ConnectionError.new("Connection timeout")
+        raise ConnectionError.new(connection_error_message("Connection timeout"))
       end
 
       def poll_sleep_ms(ms)
@@ -105,21 +128,22 @@ module Net
 
       def publish(topic, payload, retain: false, qos: 0)
         raise MQTTError.new("Not connected") unless @connected
-        raise MQTTError.new("QoS must be 0") if qos != 0
-        raise MQTTError.new("Retain not supported") if retain
-        _publish_impl(topic, payload.to_s)
+        raise MQTTError.new("QoS must be 0 or 1") unless [0, 1].include?(qos)
+        _publish_impl(topic, payload.to_s, retain, qos)
       end
 
       def subscribe(*topics, qos: 0)
         raise MQTTError.new("Not connected") unless @connected
-        raise MQTTError.new("QoS must be 0") if qos != 0
-        raise MQTTError.new("Only one topic supported") if topics.length != 1
-        _subscribe_impl(topics[0])
+        raise MQTTError.new("QoS must be 0 or 1") unless [0, 1].include?(qos)
+        topics.each do |topic|
+          _subscribe_impl(topic, qos)
+        end
       end
 
       def unsubscribe(*topics)
         raise MQTTError.new("Not connected") unless @connected
-        raise MQTTError.new("unsubscribe not supported")
+        raise MQTTError.new("Only one topic supported") if topics.length != 1
+        _unsubscribe_impl(topics[0])
       end
 
       def receive(timeout: nil)
@@ -155,6 +179,12 @@ module Net
           # Blocking
           _get_message_impl
         end
+      end
+
+      private
+
+      def connection_error_message(default = "Connection failed")
+        CONNECTION_ERRORS[_connection_status_impl] || default
       end
     end
   end
