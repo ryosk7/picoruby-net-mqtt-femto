@@ -153,7 +153,9 @@ static void mqtt_request_cb(void *arg, err_t err) {
 
 int MQTT_connect_impl(const char *host, int port, const char *client_id,
                       int keep_alive, const char *username,
-                      const char *password) {
+                      const char *password, const char *will_topic,
+                      const char *will_message, int will_qos,
+                      int will_retain) {
   memset(&g_ctx, 0, sizeof(g_ctx));
 
   ip_addr_t ip;
@@ -176,6 +178,10 @@ int MQTT_connect_impl(const char *host, int port, const char *client_id,
   client_info.keep_alive = (u16_t)keep_alive;
   client_info.client_user = username;
   client_info.client_pass = password;
+  client_info.will_topic = will_topic;
+  client_info.will_msg = will_message;
+  client_info.will_qos = (u8_t)will_qos;
+  client_info.will_retain = (u8_t)(will_retain ? 1 : 0);
 
   lwip_begin();
   mqtt_set_inpub_callback((mqtt_client_t*)g_ctx.client, mqtt_incoming_publish_cb,

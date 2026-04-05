@@ -23,6 +23,7 @@ module Net
       attr_reader :host, :port
       attr_accessor :client_id, :keep_alive, :clean_session
       attr_accessor :username, :password
+      attr_accessor :will_topic, :will_message, :will_qos, :will_retain
       attr_accessor :ssl, :ca_file, :cert_file, :key_file
 
       def initialize(host, port = 1883, **options)
@@ -32,6 +33,10 @@ module Net
         @keep_alive = options[:keep_alive] || 60
         @username = options[:username] # not work
         @password = options[:password] # not work
+        @will_topic = options[:will_topic]
+        @will_message = options[:will_message]
+        @will_qos = options[:will_qos] || 0
+        @will_retain = options[:will_retain] || false
         @ssl = options[:ssl] || false # not work
         @ca_file = options[:ca_file] # not work
         @cert_file = options[:cert_file] # not work
@@ -60,9 +65,17 @@ module Net
         if @keep_alive < 0 || @keep_alive > 65_535
           raise MQTTError.new("keep_alive must be between 0 and 65535")
         end
+        if @will_qos < 0 || @will_qos > 2
+          raise MQTTError.new("will_qos must be between 0 and 2")
+        end
+        if @will_topic.nil? != @will_message.nil?
+          raise MQTTError.new("will_topic and will_message must be set together")
+        end
 
         # Initiate non-blocking connection
-        result = _connect_impl(@host, @port, @client_id, @keep_alive, @username, @password)
+        result = _connect_impl(@host, @port, @client_id, @keep_alive,
+                               @username, @password, @will_topic,
+                               @will_message, @will_qos, @will_retain)
         raise ConnectionError.new("Connection failed") unless result
 
         # Short test loop (~3 seconds timeout)
