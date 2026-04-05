@@ -2,6 +2,8 @@ module Net
   module MQTT
     class Client
       def poll_sleep_ms: (Integer) -> void
+      def wait_until_connected: (?timeout_ms: Integer, ?poll_interval_ms: Integer) -> bool
+      def wait_until_disconnected: (?timeout_ms: Integer, ?poll_interval_ms: Integer) -> bool
       def with_reconnect: (?max_attempts: Integer?, ?base_delay_ms: Integer, ?max_delay_ms: Integer) { (Client) -> untyped } -> untyped
       def publish_with_reconnect: (String, untyped, ?retain: bool, ?qos: Integer, ?max_attempts: Integer?, ?base_delay_ms: Integer, ?max_delay_ms: Integer) -> untyped
       def subscribe_with_reconnect: (*String, ?qos: Integer, ?max_attempts: Integer?, ?base_delay_ms: Integer, ?max_delay_ms: Integer) -> untyped

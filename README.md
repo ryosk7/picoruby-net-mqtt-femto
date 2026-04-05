@@ -77,6 +77,19 @@ rescue Net::MQTT::ConnectionError
 end
 ```
 
+### Wait For Connection State
+
+```ruby
+require 'net/mqtt'
+
+client = Net::MQTT::Client.new("test.mosquitto.org", 1883)
+client.connect
+
+client.wait_until_connected(timeout_ms: 3_000)
+client.disconnect
+client.wait_until_disconnected(timeout_ms: 3_000)
+```
+
 ### Wrap Operations With Reconnect
 
 ```ruby
