@@ -125,6 +125,7 @@ client = Net::MQTT::Client.new("test.mosquitto.org", 1883)
 client.connect
 client.subscribe("sensors/#", qos: 1)
 
+client.wait_until_message_available(timeout_ms: 3_000)
 topic, payload = client.receive_with_reconnect(timeout: 5, max_attempts: 3)
 puts "#{topic}: #{payload}"
 ```
