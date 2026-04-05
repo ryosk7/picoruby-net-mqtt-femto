@@ -154,6 +154,7 @@ client.connect
 
 # Subscribe to topics
 client.subscribe("sensors/#", "alerts/#")
+client.unsubscribe("alerts/#")
 
 # Receive messages
 5.times do
