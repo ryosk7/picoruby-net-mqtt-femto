@@ -10,9 +10,17 @@
 extern "C" {
 #endif
 
+#ifndef MQTT_TOPIC_MAX_LEN
 #define MQTT_TOPIC_MAX_LEN 64
+#endif
+
+#ifndef MQTT_PAYLOAD_MAX_LEN
 #define MQTT_PAYLOAD_MAX_LEN 256
+#endif
+
+#ifndef MQTT_CLIENT_ID_MAX_LEN
 #define MQTT_CLIENT_ID_MAX_LEN 64
+#endif
 
 typedef enum {
   MQTT_STATE_IDLE,
