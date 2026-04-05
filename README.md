@@ -139,6 +139,7 @@ client.connect
 puts client.native_state
 puts client.connection_status
 puts client.receive_queue_size
+pp client.stats
 ```
 
 ### Subscribe to Topics

@@ -10,6 +10,7 @@ module Net
       def connection_status: () -> Integer
       def native_state: () -> String
       def receive_queue_size: () -> Integer
+      def stats: () -> Hash[Symbol, untyped]
       attr_accessor auto_resubscribe: bool
 
       private def _connect_impl: (String, Integer, String, Integer, String?, String?, String?, String?, Integer, bool) -> bool

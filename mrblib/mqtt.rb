@@ -240,6 +240,17 @@ module Net
         _receive_queue_size_impl
       end
 
+      def stats
+        {
+          connected: connected?,
+          native_state: native_state,
+          connection_status: connection_status,
+          receive_queue_size: receive_queue_size,
+          subscriptions: @subscriptions.length,
+          auto_resubscribe: @auto_resubscribe,
+        }
+      end
+
       def publish(topic, payload, retain: false, qos: 0)
         raise MQTTError.new("Not connected") unless connected?
         raise MQTTError.new("QoS must be 0 or 1") unless [0, 1].include?(qos)
