@@ -221,6 +221,15 @@ module Net
         end
       end
 
+      def unsubscribe_with_reconnect(*topics, max_attempts: nil,
+                                     base_delay_ms: 100, max_delay_ms: 5_000)
+        with_reconnect(max_attempts: max_attempts,
+                       base_delay_ms: base_delay_ms,
+                       max_delay_ms: max_delay_ms) do |mqtt|
+          mqtt.unsubscribe(*topics)
+        end
+      end
+
       def connected?
         return false unless @connected
 
@@ -240,13 +249,17 @@ module Net
         _receive_queue_size_impl
       end
 
+      def subscriptions
+        @subscriptions.dup
+      end
+
       def stats
         {
           connected: connected?,
           native_state: native_state,
           connection_status: connection_status,
           receive_queue_size: receive_queue_size,
-          subscriptions: @subscriptions.length,
+          subscriptions: subscriptions.length,
           auto_resubscribe: @auto_resubscribe,
         }
       end
@@ -268,9 +281,10 @@ module Net
 
       def unsubscribe(*topics)
         raise MQTTError.new("Not connected") unless connected?
-        raise MQTTError.new("Only one topic supported") if topics.length != 1
-        @subscriptions.delete(topics[0])
-        _unsubscribe_impl(topics[0])
+        topics.each do |topic|
+          @subscriptions.delete(topic)
+          _unsubscribe_impl(topic)
+        end
       end
 
       def receive(timeout: nil)
