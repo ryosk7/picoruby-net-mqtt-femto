@@ -77,6 +77,19 @@ rescue Net::MQTT::ConnectionError
 end
 ```
 
+### Wrap Operations With Reconnect
+
+```ruby
+require 'net/mqtt'
+
+client = Net::MQTT::Client.new("test.mosquitto.org", 1883)
+client.connect
+
+client.with_reconnect(max_attempts: 3, base_delay_ms: 200) do |mqtt|
+  mqtt.publish("sensors/temperature", "25.5", qos: 1)
+end
+```
+
 ### Subscribe to Topics
 
 ```ruby

@@ -2,6 +2,7 @@ module Net
   module MQTT
     class Client
       def poll_sleep_ms: (Integer) -> void
+      def with_reconnect: (?max_attempts: Integer?, ?base_delay_ms: Integer, ?max_delay_ms: Integer) { (Client) -> untyped } -> untyped
 
       private def _connect_impl: (String, Integer, String, Integer, String?, String?, String?, String?, Integer, bool) -> bool
       private def _connection_status_impl: () -> Integer

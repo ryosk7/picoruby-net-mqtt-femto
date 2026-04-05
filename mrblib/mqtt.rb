@@ -145,6 +145,24 @@ module Net
         end
       end
 
+      def with_reconnect(max_attempts: nil, base_delay_ms: 100, max_delay_ms: 5_000)
+        raise ArgumentError, "block required" unless block_given?
+
+        attempts = 0
+
+        loop do
+          begin
+            return yield self
+          rescue ConnectionError
+            attempts += 1
+            raise if max_attempts && attempts > max_attempts
+
+            reconnect(max_attempts: 1, base_delay_ms: base_delay_ms,
+                      max_delay_ms: max_delay_ms)
+          end
+        end
+      end
+
       def connected?
         return false unless @connected
 
