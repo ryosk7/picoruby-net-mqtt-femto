@@ -172,6 +172,7 @@ pp client.stats
 pp client.subscriptions
 puts client.subscribed?("sensors/#")
 puts client.subscription_qos("sensors/#")
+puts client.subscription_count
 pp client.drain_messages
 ```
 
