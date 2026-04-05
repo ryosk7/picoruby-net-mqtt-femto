@@ -7,13 +7,19 @@ module Net
       def subscribe_with_reconnect: (*String, ?qos: Integer, ?max_attempts: Integer?, ?base_delay_ms: Integer, ?max_delay_ms: Integer) -> untyped
       def receive_with_reconnect: (?timeout: untyped, ?max_attempts: Integer?, ?base_delay_ms: Integer, ?max_delay_ms: Integer) -> [String, String]?
       def receive_with_reconnect: (?timeout: untyped, ?max_attempts: Integer?, ?base_delay_ms: Integer, ?max_delay_ms: Integer) { (String, String) -> untyped } -> untyped
+      def connection_status: () -> Integer
+      def native_state: () -> String
+      def receive_queue_size: () -> Integer
+      def stats: () -> Hash[Symbol, untyped]
       attr_accessor auto_resubscribe: bool
 
       private def _connect_impl: (String, Integer, String, Integer, String?, String?, String?, String?, Integer, bool) -> bool
       private def _connection_status_impl: () -> Integer
+      private def _fsm_state_impl: () -> Integer
       private def _poll_impl: () -> void
       private def _poll_sleep_impl: (Integer) -> void
       private def _is_connected_impl: () -> bool
+      private def _receive_queue_size_impl: () -> Integer
       private def _publish_impl: (String, String, bool, Integer) -> bool
       private def _subscribe_impl: (String, Integer) -> bool
       private def _unsubscribe_impl: (String) -> bool

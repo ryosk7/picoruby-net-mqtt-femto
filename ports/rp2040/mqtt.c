@@ -330,6 +330,14 @@ int MQTT_connection_status_impl() {
   return g_ctx.connection_status;
 }
 
+int MQTT_fsm_state_impl() {
+  return g_ctx.fsm_state;
+}
+
+int MQTT_receive_queue_size_impl() {
+  return g_ctx.recv_queue_count;
+}
+
 void MQTT_disconnect_impl() {
   if (g_ctx.fsm_state != MQTT_STATE_IDLE) {
     lwip_begin();

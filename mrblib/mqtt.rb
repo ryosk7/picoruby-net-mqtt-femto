@@ -19,6 +19,18 @@ module Net
     PINGRESP    = 13
     DISCONNECT  = 14
 
+    STATE_NAMES = {
+      0 => "idle",
+      1 => "connecting",
+      2 => "connack_wait",
+      3 => "active",
+      4 => "subscribing",
+      5 => "publishing",
+      6 => "disconnecting",
+      7 => "error",
+      8 => "timeout"
+    }
+
     CONNECTION_ERRORS = {
       1 => "Connection refused: unsupported protocol version",
       2 => "Connection refused: identifier rejected",
@@ -214,6 +226,29 @@ module Net
 
         @connected = false unless _is_connected_impl
         @connected
+      end
+
+      def connection_status
+        _connection_status_impl
+      end
+
+      def native_state
+        STATE_NAMES[_fsm_state_impl] || "unknown"
+      end
+
+      def receive_queue_size
+        _receive_queue_size_impl
+      end
+
+      def stats
+        {
+          connected: connected?,
+          native_state: native_state,
+          connection_status: connection_status,
+          receive_queue_size: receive_queue_size,
+          subscriptions: @subscriptions.length,
+          auto_resubscribe: @auto_resubscribe,
+        }
       end
 
       def publish(topic, payload, retain: false, qos: 0)
