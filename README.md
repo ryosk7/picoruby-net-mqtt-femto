@@ -100,7 +100,7 @@ This gem provides the same `Net::MQTT` module and client API surface as picoruby
 - QoS 0 only (higher QoS not supported yet)
 - TLS/SSL is not supported
 - username/password authentication is not supported yet
-- `keep_alive` and `clean_session` options are currently ignored (keep-alive is fixed at 60s)
+- `clean_session` option is currently ignored
 - `unsubscribe` and `ping` raise "not supported"
 
 ## Support Status
@@ -113,7 +113,6 @@ This gem provides the same `Net::MQTT` module and client API surface as picoruby
 - QoS 0
 
 ### Planned
-- `keep_alive` option (set keep-alive value from Ruby)
 - `username` / `password` authentication
 - `retain` flag
 - `unsubscribe`

@@ -6,7 +6,8 @@
 #include <mrubyc.h>
 
 // External function declarations (implementations in ports/rp2040/mqtt.c)
-extern int MQTT_connect_impl(const char *host, int port, const char *client_id);
+extern int MQTT_connect_impl(const char *host, int port, const char *client_id,
+                             int keep_alive);
 extern void MQTT_poll_impl(void);
 extern void MQTT_poll_sleep_impl(int ms);
 extern int MQTT_is_connected_impl(void);
@@ -20,7 +21,7 @@ extern void MQTT_disconnect_impl(void);
 static void
 c_mqtt_connect(mrbc_vm *vm, mrbc_value v[], int argc)
 {
-  if (argc != 3) {
+  if (argc != 4) {
     SET_FALSE_RETURN();
     return;
   }
@@ -39,12 +40,17 @@ c_mqtt_connect(mrbc_vm *vm, mrbc_value v[], int argc)
     SET_FALSE_RETURN();
     return;
   }
+  if (v[4].tt != MRBC_TT_INTEGER) {
+    SET_FALSE_RETURN();
+    return;
+  }
 
   const char *host = (const char *)GET_STRING_ARG(1);
   int port = GET_INT_ARG(2);
   const char *client_id = (const char *)GET_STRING_ARG(3);
+  int keep_alive = GET_INT_ARG(4);
 
-  int result = MQTT_connect_impl(host, port, client_id);
+  int result = MQTT_connect_impl(host, port, client_id, keep_alive);
 
   if (result == 0) {
     SET_TRUE_RETURN();

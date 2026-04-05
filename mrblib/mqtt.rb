@@ -60,9 +60,12 @@ module Net
         if @username || @password
           raise MQTTError.new("username/password not supported")
         end
+        if @keep_alive < 0 || @keep_alive > 65_535
+          raise MQTTError.new("keep_alive must be between 0 and 65535")
+        end
 
         # Initiate non-blocking connection
-        result = _connect_impl(@host, @port, @client_id)
+        result = _connect_impl(@host, @port, @client_id, @keep_alive)
         raise ConnectionError.new("Connection failed") unless result
 
         # Short test loop (~3 seconds timeout)

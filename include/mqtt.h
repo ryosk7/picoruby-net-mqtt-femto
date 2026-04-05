@@ -45,7 +45,8 @@ typedef struct {
   void *callback_proc; // Callback procedure (platform-specific)
 } mqtt_context_t;
 
-int MQTT_connect_impl(const char *host, int port, const char *client_id);
+int MQTT_connect_impl(const char *host, int port, const char *client_id,
+                      int keep_alive);
 void MQTT_poll_impl(void);
 void MQTT_poll_sleep_impl(int ms);
 int MQTT_is_connected_impl(void);
