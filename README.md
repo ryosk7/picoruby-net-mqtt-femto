@@ -126,6 +126,7 @@ client.connect
 
 client.subscribe_with_reconnect("sensors/#", qos: 1, max_attempts: 3)
 client.publish_with_reconnect("sensors/temperature", "25.5", qos: 1, max_attempts: 3)
+client.unsubscribe_with_reconnect("sensors/#", max_attempts: 3)
 ```
 
 ### Inspect Native State
@@ -140,6 +141,7 @@ puts client.native_state
 puts client.connection_status
 puts client.receive_queue_size
 pp client.stats
+pp client.subscriptions
 ```
 
 ### Subscribe to Topics
