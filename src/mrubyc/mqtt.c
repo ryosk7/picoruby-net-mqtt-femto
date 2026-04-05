@@ -16,8 +16,8 @@ extern void MQTT_poll_sleep_impl(int ms);
 extern int MQTT_is_connected_impl(void);
 extern int MQTT_connection_status_impl(void);
 extern int MQTT_publish_impl(const char *topic, const char *payload, int len,
-                             int retain);
-extern int MQTT_subscribe_impl(const char *topic);
+                             int qos, int retain);
+extern int MQTT_subscribe_impl(const char *topic, int qos);
 extern int MQTT_unsubscribe_impl(const char *topic);
 extern int MQTT_get_message_impl(char **topic, char **payload);
 extern void MQTT_disconnect_impl(void);
@@ -100,7 +100,7 @@ c_mqtt_connect(mrbc_vm *vm, mrbc_value v[], int argc)
 static void
 c_mqtt_publish(mrbc_vm *vm, mrbc_value v[], int argc)
 {
-  if (argc != 3) {
+  if (argc != 4) {
     SET_FALSE_RETURN();
     return;
   }
@@ -113,12 +113,17 @@ c_mqtt_publish(mrbc_vm *vm, mrbc_value v[], int argc)
     SET_FALSE_RETURN();
     return;
   }
+  if (v[4].tt != MRBC_TT_INTEGER) {
+    SET_FALSE_RETURN();
+    return;
+  }
 
   const char *topic = (const char *)GET_STRING_ARG(1);
   const char *payload = (const char *)GET_STRING_ARG(2);
   int retain = (v[3].tt == MRBC_TT_TRUE) ? 1 : 0;
+  int qos = GET_INT_ARG(4);
 
-  int result = MQTT_publish_impl(topic, payload, 0, retain);
+  int result = MQTT_publish_impl(topic, payload, 0, qos, retain);
 
   if (result == 0) {
     SET_TRUE_RETURN();
@@ -130,19 +135,20 @@ c_mqtt_publish(mrbc_vm *vm, mrbc_value v[], int argc)
 static void
 c_mqtt_subscribe(mrbc_vm *vm, mrbc_value v[], int argc)
 {
-  if (argc != 1) {
+  if (argc != 2) {
     SET_FALSE_RETURN();
     return;
   }
 
-  if (v[1].tt != MRBC_TT_STRING) {
+  if (v[1].tt != MRBC_TT_STRING || v[2].tt != MRBC_TT_INTEGER) {
     SET_FALSE_RETURN();
     return;
   }
 
   const char *topic = (const char *)GET_STRING_ARG(1);
+  int qos = GET_INT_ARG(2);
 
-  int result = MQTT_subscribe_impl(topic);
+  int result = MQTT_subscribe_impl(topic, qos);
 
   if (result == 0) {
     SET_TRUE_RETURN();

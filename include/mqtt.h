@@ -48,9 +48,11 @@ typedef struct {
   mqtt_fsm_state_t fsm_state;
 
   char topic_to_sub[MQTT_TOPIC_MAX_LEN];
+  int subscribe_qos;
   char topic_to_pub[MQTT_TOPIC_MAX_LEN];
   char payload_to_pub[MQTT_PAYLOAD_MAX_LEN];
   int payload_to_pub_len;
+  int publish_qos;
   int publish_retain;
 
   char recv_topic[MQTT_TOPIC_MAX_LEN];
@@ -76,10 +78,10 @@ void MQTT_poll_impl(void);
 void MQTT_poll_sleep_impl(int ms);
 int MQTT_is_connected_impl(void);
 int MQTT_connection_status_impl(void);
-int MQTT_subscribe_impl(const char *topic);
+int MQTT_subscribe_impl(const char *topic, int qos);
 int MQTT_unsubscribe_impl(const char *topic);
 int MQTT_publish_impl(const char *topic, const char *payload, int len,
-                      int retain);
+                      int qos, int retain);
 void MQTT_disconnect_impl(void);
 int MQTT_get_message_impl(char **topic, char **payload);
 

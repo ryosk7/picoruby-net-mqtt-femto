@@ -128,15 +128,15 @@ module Net
 
       def publish(topic, payload, retain: false, qos: 0)
         raise MQTTError.new("Not connected") unless @connected
-        raise MQTTError.new("QoS must be 0") if qos != 0
-        _publish_impl(topic, payload.to_s, retain)
+        raise MQTTError.new("QoS must be 0 or 1") unless [0, 1].include?(qos)
+        _publish_impl(topic, payload.to_s, retain, qos)
       end
 
       def subscribe(*topics, qos: 0)
         raise MQTTError.new("Not connected") unless @connected
-        raise MQTTError.new("QoS must be 0") if qos != 0
+        raise MQTTError.new("QoS must be 0 or 1") unless [0, 1].include?(qos)
         topics.each do |topic|
-          _subscribe_impl(topic)
+          _subscribe_impl(topic, qos)
         end
       end
 
