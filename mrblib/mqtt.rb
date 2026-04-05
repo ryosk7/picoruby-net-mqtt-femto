@@ -249,6 +249,18 @@ module Net
         _receive_queue_size_impl
       end
 
+      def pending_publish_topic
+        _pending_publish_topic_impl
+      end
+
+      def pending_publish_qos
+        _pending_publish_qos_impl
+      end
+
+      def pending_subscribe_topic
+        _pending_subscribe_topic_impl
+      end
+
       def subscriptions
         @subscriptions.dup
       end
@@ -259,6 +271,9 @@ module Net
           native_state: native_state,
           connection_status: connection_status,
           receive_queue_size: receive_queue_size,
+          pending_publish_topic: pending_publish_topic,
+          pending_publish_qos: pending_publish_qos,
+          pending_subscribe_topic: pending_subscribe_topic,
           subscriptions: subscriptions.length,
           auto_resubscribe: @auto_resubscribe,
         }

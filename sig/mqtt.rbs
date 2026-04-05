@@ -11,6 +11,9 @@ module Net
       def connection_status: () -> Integer
       def native_state: () -> String
       def receive_queue_size: () -> Integer
+      def pending_publish_topic: () -> String?
+      def pending_publish_qos: () -> Integer
+      def pending_subscribe_topic: () -> String?
       def subscriptions: () -> Hash[String, Integer]
       def stats: () -> Hash[Symbol, untyped]
       attr_accessor auto_resubscribe: bool
@@ -21,6 +24,9 @@ module Net
       private def _poll_impl: () -> void
       private def _poll_sleep_impl: (Integer) -> void
       private def _is_connected_impl: () -> bool
+      private def _pending_publish_qos_impl: () -> Integer
+      private def _pending_publish_topic_impl: () -> String?
+      private def _pending_subscribe_topic_impl: () -> String?
       private def _receive_queue_size_impl: () -> Integer
       private def _publish_impl: (String, String, bool, Integer) -> bool
       private def _subscribe_impl: (String, Integer) -> bool
