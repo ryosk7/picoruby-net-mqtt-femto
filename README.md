@@ -90,6 +90,19 @@ client.with_reconnect(max_attempts: 3, base_delay_ms: 200) do |mqtt|
 end
 ```
 
+### Restore Subscriptions After Reconnect
+
+```ruby
+require 'net/mqtt'
+
+client = Net::MQTT::Client.new("test.mosquitto.org", 1883)
+client.connect
+client.subscribe("sensors/#", qos: 1)
+
+client.reconnect
+# previously subscribed topics are subscribed again automatically
+```
+
 ### Subscribe to Topics
 
 ```ruby
