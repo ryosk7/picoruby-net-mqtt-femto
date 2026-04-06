@@ -176,6 +176,7 @@ pp client.subscriptions
 client.each_subscription do |topic, qos|
   puts "#{topic}: #{qos}"
 end
+puts client.drain_each_subscription { |topic, qos| puts "#{topic}: #{qos}" }
 puts client.subscribed?("sensors/#")
 puts client.subscription_qos("sensors/#")
 puts client.subscription_count

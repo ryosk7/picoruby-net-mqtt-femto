@@ -406,6 +406,17 @@ module Net
         @subscriptions
       end
 
+      def drain_each_subscription
+        raise ArgumentError, "block required" unless block_given?
+
+        count = 0
+        each_subscription do |topic, qos|
+          yield(topic, qos)
+          count += 1
+        end
+        count
+      end
+
       def subscribed?(topic)
         @subscriptions.key?(topic)
       end
