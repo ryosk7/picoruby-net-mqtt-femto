@@ -54,7 +54,6 @@ static bool poll_state() {
       mqtt_subscribe((mqtt_client_t*)g_ctx.client, g_ctx.topic_to_sub,
                      g_ctx.subscribe_qos, mqtt_request_cb, &g_ctx);
       lwip_end();
-      g_ctx.topic_to_sub[0] = '\0';
     } else if (g_ctx.topic_to_pub[0] != '\0') {
       g_ctx.fsm_state = MQTT_STATE_PUBLISHING;
       lwip_begin();
@@ -62,7 +61,6 @@ static bool poll_state() {
                    g_ctx.payload_to_pub_len, g_ctx.publish_qos, g_ctx.publish_retain,
                    mqtt_request_cb, &g_ctx);
       lwip_end();
-      g_ctx.topic_to_pub[0] = '\0';
     }
     break;
   case MQTT_STATE_ERROR:
@@ -163,9 +161,11 @@ static void mqtt_request_cb(void *arg, err_t err) {
     ctx->fsm_state = MQTT_STATE_ACTIVE;
     break;
   case MQTT_STATE_PUBLISHING:
+    ctx->topic_to_pub[0] = '\0';
     ctx->fsm_state = MQTT_STATE_ACTIVE;
     break;
   case MQTT_STATE_SUBSCRIBING:
+    ctx->topic_to_sub[0] = '\0';
     ctx->fsm_state = MQTT_STATE_ACTIVE;
     break;
   default:
@@ -250,7 +250,12 @@ int MQTT_publish_impl(const char *topic, const char *payload, int len,
     Net_busy_wait_ms(10);
   }
 
-  return (g_ctx.topic_to_pub[0] == '\0') ? 0 : -1;
+  if (g_ctx.topic_to_pub[0] != '\0') {
+    g_ctx.fsm_state = MQTT_STATE_TIMEOUT;
+    return -1;
+  }
+
+  return 0;
 }
 
 int MQTT_subscribe_impl(const char *topic, int qos) {
@@ -269,7 +274,12 @@ int MQTT_subscribe_impl(const char *topic, int qos) {
     Net_busy_wait_ms(10);
   }
 
-  return (g_ctx.topic_to_sub[0] == '\0') ? 0 : -1;
+  if (g_ctx.topic_to_sub[0] != '\0') {
+    g_ctx.fsm_state = MQTT_STATE_TIMEOUT;
+    return -1;
+  }
+
+  return 0;
 }
 
 int MQTT_unsubscribe_impl(const char *topic) {
