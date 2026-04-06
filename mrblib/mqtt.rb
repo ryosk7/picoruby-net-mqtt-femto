@@ -328,6 +328,10 @@ module Net
         receive_queue_size > 0
       end
 
+      def receive_queue_empty?
+        receive_queue_size == 0
+      end
+
       def drain_messages
         messages = []
 
@@ -389,6 +393,7 @@ module Net
           connection_error: connection_error?,
           receive_queue_size: receive_queue_size,
           message_available: message_available?,
+          receive_queue_empty: receive_queue_empty?,
           pending_publish: pending_publish?,
           pending_publish_topic: pending_publish_topic,
           pending_publish_qos: pending_publish_qos,

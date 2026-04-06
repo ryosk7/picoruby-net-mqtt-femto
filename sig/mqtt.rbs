@@ -23,6 +23,7 @@ module Net
       def subscribing?: () -> bool
       def receive_queue_size: () -> Integer
       def message_available?: () -> bool
+      def receive_queue_empty?: () -> bool
       def drain_messages: () -> Array[[String, String]]
       def pending_publish_topic: () -> String?
       def pending_publish?: () -> bool
