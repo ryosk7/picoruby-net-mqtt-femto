@@ -41,6 +41,21 @@ If you want to use it from another gem or external build config, add it as a Git
 spec.add_dependency 'picoruby-net-mqtt-femto', 'ryosk7/picoruby-net-mqtt-femto'
 ```
 
+## Build In This Repository
+
+This repository vendors `picoruby` under `vendor/picoruby` and is intended to build through the existing R2P2 flow.
+
+```sh
+cd vendor/picoruby
+rake r2p2:picoruby:pico_w:prod
+```
+
+The generated firmware files are placed under:
+
+```text
+vendor/picoruby/build/r2p2/picoruby/pico_w/prod/
+```
+
 ## Usage
 
 The API is compatible with picoruby-net-mqtt:
