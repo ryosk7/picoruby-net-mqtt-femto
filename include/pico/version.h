@@ -1,8 +1,3 @@
-/*
- * Minimal Pico SDK version header for the external gem build stage.
- * Keep this aligned with vendor/picoruby/mrbgems/picoruby-r2p2/r2p2_config.rb.
- */
-
 #ifndef _PICO_VERSION_H
 #define _PICO_VERSION_H
 
