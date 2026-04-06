@@ -60,7 +60,8 @@ module Net
         @will_message = options[:will_message]
         @will_qos = options[:will_qos] || 0
         @will_retain = options[:will_retain] || false
-        @auto_resubscribe = options.key?(:auto_resubscribe) ? options[:auto_resubscribe] : true
+        auto_resubscribe = options[:auto_resubscribe]
+        @auto_resubscribe = auto_resubscribe.nil? ? true : auto_resubscribe
         @ssl = options[:ssl] || false # not work
         @ca_file = options[:ca_file] # not work
         @cert_file = options[:cert_file] # not work
