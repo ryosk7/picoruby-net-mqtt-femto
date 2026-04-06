@@ -342,6 +342,14 @@ module Net
         messages
       end
 
+      def each_message
+        return enum_for(:each_message) unless block_given?
+
+        drain_messages.each do |topic, payload|
+          yield(topic, payload)
+        end
+      end
+
       def pending_publish_topic
         _pending_publish_topic_impl
       end

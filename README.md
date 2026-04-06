@@ -175,6 +175,9 @@ pp client.subscriptions
 puts client.subscribed?("sensors/#")
 puts client.subscription_qos("sensors/#")
 puts client.subscription_count
+client.each_message do |topic, payload|
+  puts "#{topic}: #{payload}"
+end
 pp client.drain_messages
 ```
 

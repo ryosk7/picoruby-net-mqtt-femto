@@ -25,6 +25,8 @@ module Net
       def message_available?: () -> bool
       def receive_queue_empty?: () -> bool
       def drain_messages: () -> Array[[String, String]]
+      def each_message: () -> Enumerator[[String, String], Array[[String, String]]]
+      def each_message: () { (String, String) -> untyped } -> Array[[String, String]]
       def pending_publish_topic: () -> String?
       def pending_publish?: () -> bool
       def pending_publish_qos: () -> Integer
