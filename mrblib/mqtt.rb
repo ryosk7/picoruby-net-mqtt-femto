@@ -93,11 +93,20 @@ module Net
         if @will_topic.nil? != @will_message.nil?
           raise MQTTError.new("will_topic and will_message must be set together")
         end
+        ca_addr = nil
+        ca_size = 0
+        if @ssl && @ca_file
+          File.open(@ca_file) do |f|
+            ca_addr = f.physical_address
+            ca_size = f.size
+          end
+        end
 
         # Initiate non-blocking connection
         result = _connect_impl(@host, @port, @client_id, @keep_alive,
                                @username, @password, @will_topic,
-                               @will_message, @will_qos, @will_retain, @ssl)
+                               @will_message, @will_qos, @will_retain, @ssl,
+                               ca_addr, ca_size)
         raise ConnectionError.new(connection_error_message) unless result
 
         # Short test loop (~3 seconds timeout)

@@ -74,7 +74,8 @@ int MQTT_connect_impl(const char *host, int port, const char *client_id,
                       int keep_alive, const char *username,
                       const char *password, const char *will_topic,
                       const char *will_message, int will_qos,
-                      int will_retain, int ssl);
+                      int will_retain, int ssl,
+                      uintptr_t ca_addr, int ca_size);
 void MQTT_poll_impl(void);
 void MQTT_poll_sleep_impl(int ms);
 int MQTT_is_connected_impl(void);
