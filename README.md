@@ -25,6 +25,7 @@ In other words, `picoruby-net-mqtt` is the more portable and Ruby-centric option
 - Native lwIP MQTT implementation for better performance
 - MQTT 3.1.1 protocol support
 - QoS 0 and QoS 1
+- Experimental MQTTS support
 - CONNECT, PUBLISH, SUBSCRIBE, PING, DISCONNECT
 - Keep-alive with automatic PING
 - Small fixed receive queue for bursty incoming messages
@@ -75,6 +76,32 @@ client.publish("sensors/temperature", "25.5")
 # Disconnect
 client.disconnect
 ```
+
+### Experimental MQTTS With CA File
+
+```ruby
+require 'net/mqtt'
+
+client = Net::MQTT::Client.new(
+  "test.mosquitto.org",
+  8883,
+  ssl: true,
+  ca_file: "/certs/ca.crt"
+)
+
+client.connect
+client.publish("sensors/temperature", "25.5", qos: 1)
+client.disconnect
+```
+
+On RP2040, `ca_file` is read from a flash-backed file and passed to TLS using
+`File#physical_address` and `File#size`.
+
+Current limitations:
+- `ssl: true` is still experimental
+- `ca_file` is supported for CA-only verification
+- `cert_file` and `key_file` are not supported yet
+- the CA certificate file must already exist on the device filesystem
 
 ### Reconnect With Backoff
 
