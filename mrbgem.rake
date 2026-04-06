@@ -22,6 +22,9 @@ MRuby::Gem::Specification.new('picoruby-net-mqtt-femto') do |spec|
     spec.cc.include_paths << "#{lwip_dir}/src/include"
     spec.cc.include_paths << "#{lwip_dir}/contrib/ports/unix/port/include"
     spec.cc.include_paths << "#{lwip_dir}/src/apps/altcp_tls"
+    # Keep this gem self-contained when built as an external dependency.
+    # Some of these settings overlap with picoruby-socket and should be
+    # revisited later if PicoRuby gains a shared RP2040/lwIP build layer.
     spec.cc.defines << 'PICO_CYW43_ARCH_POLL=1'
     spec.cc.defines << 'PICO_RP2040=1'
     spec.cc.defines << 'PICO_BOARD="pico_w"'
