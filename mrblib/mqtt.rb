@@ -362,6 +362,10 @@ module Net
         !pending_subscribe_topic.nil?
       end
 
+      def pending_operation?
+        pending_publish? || pending_subscribe?
+      end
+
       def subscriptions
         @subscriptions.dup
       end
@@ -394,6 +398,7 @@ module Net
           receive_queue_size: receive_queue_size,
           message_available: message_available?,
           receive_queue_empty: receive_queue_empty?,
+          pending_operation: pending_operation?,
           pending_publish: pending_publish?,
           pending_publish_topic: pending_publish_topic,
           pending_publish_qos: pending_publish_qos,

@@ -164,6 +164,7 @@ puts client.connection_error?
 puts client.receive_queue_size
 puts client.message_available?
 puts client.receive_queue_empty?
+puts client.pending_operation?
 puts client.pending_publish?
 puts client.pending_publish_topic
 puts client.pending_publish_qos
