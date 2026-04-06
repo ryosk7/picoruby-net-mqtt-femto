@@ -350,6 +350,17 @@ module Net
         end
       end
 
+      def drain_each_message
+        raise ArgumentError, "block required" unless block_given?
+
+        count = 0
+        each_message do |topic, payload|
+          yield(topic, payload)
+          count += 1
+        end
+        count
+      end
+
       def pending_publish_topic
         _pending_publish_topic_impl
       end
