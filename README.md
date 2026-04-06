@@ -41,6 +41,21 @@ If you want to use it from another gem or external build config, add it as a Git
 spec.add_dependency 'picoruby-net-mqtt-femto', 'ryosk7/picoruby-net-mqtt-femto'
 ```
 
+## Build In This Repository
+
+This repository vendors `picoruby` under `vendor/picoruby` and includes a dedicated build config for Pico W.
+
+```sh
+cd vendor/picoruby
+MRUBY_CONFIG=build_config/picoruby-net-mqtt-femto-pico_w.rb rake
+```
+
+The build config loads this repository as an external gem with:
+
+```ruby
+conf.gem gemdir: File.expand_path("../../..", __dir__)
+```
+
 ## Usage
 
 The API is compatible with picoruby-net-mqtt:

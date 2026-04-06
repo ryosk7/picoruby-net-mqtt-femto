@@ -1,0 +1,14 @@
+/*
+ * Minimal Pico SDK version header for plain mruby rake builds.
+ * Keep this aligned with vendor/picoruby/mrbgems/picoruby-r2p2/r2p2_config.rb.
+ */
+
+#ifndef _PICO_VERSION_H
+#define _PICO_VERSION_H
+
+#define PICO_SDK_VERSION_MAJOR 2
+#define PICO_SDK_VERSION_MINOR 2
+#define PICO_SDK_VERSION_REVISION 0
+#define PICO_SDK_VERSION_STRING "2.2.0"
+
+#endif

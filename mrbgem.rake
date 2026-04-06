@@ -16,13 +16,30 @@ MRuby::Gem::Specification.new('picoruby-net-mqtt-femto') do |spec|
 
   unless build.posix?
     lwip_dir = "#{MRUBY_ROOT}/mrbgems/picoruby-socket/lib/lwip"
+    pico_sdk_dir = "#{MRUBY_ROOT}/mrbgems/picoruby-r2p2/lib/pico-sdk"
+    spec.cc.flags << '-std=gnu11'
     spec.cc.include_paths << "#{MRUBY_ROOT}/mrbgems/picoruby-socket/include"
     spec.cc.include_paths << "#{lwip_dir}/src/include"
     spec.cc.include_paths << "#{lwip_dir}/contrib/ports/unix/port/include"
     spec.cc.include_paths << "#{lwip_dir}/src/apps/altcp_tls"
+    spec.cc.defines << 'PICO_CYW43_ARCH_POLL=1'
+    spec.cc.defines << 'PICO_RP2040=1'
+    spec.cc.defines << 'PICO_BOARD="pico_w"'
 
-    spec.objs << "#{dir}/ports/rp2040/mqtt.o"
-    file "#{dir}/ports/rp2040/mqtt.o" => "#{dir}/ports/rp2040/mqtt.c" do |t|
+    if File.directory?(pico_sdk_dir)
+      pico_include_paths = Dir.glob(
+        "#{pico_sdk_dir}/src/{boards,common,rp2_common,rp2040}/**/include"
+      ).select { |path| File.directory?(path) }
+      pico_lib_include_paths = Dir.glob(
+        "#{pico_sdk_dir}/lib/**/include"
+      ).select { |path| File.directory?(path) }
+      pico_lib_include_paths << "#{pico_sdk_dir}/lib/cyw43-driver/src"
+      spec.cc.include_paths.concat((pico_include_paths + pico_lib_include_paths).sort.uniq)
+    end
+
+    obj = "#{dir}/ports/rp2040/mqtt.c".relative_path_from(dir).pathmap("#{build_dir}/%X.o")
+    spec.objs << obj
+    file obj => "#{dir}/ports/rp2040/mqtt.c" do |t|
       cc.run t.name, t.prerequisites.first
     end
   end
