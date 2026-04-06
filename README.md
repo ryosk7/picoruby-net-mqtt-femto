@@ -171,6 +171,7 @@ puts client.pending_publish_qos
 puts client.pending_subscribe?
 puts client.pending_subscribe_topic
 pp client.pending_topics
+puts client.pending_topic_count
 pp client.stats
 pp client.subscriptions
 client.each_subscription do |topic, qos|

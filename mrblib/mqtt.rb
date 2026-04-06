@@ -392,6 +392,10 @@ module Net
         topics
       end
 
+      def pending_topic_count
+        pending_topics.length
+      end
+
       def subscriptions
         @subscriptions.dup
       end
