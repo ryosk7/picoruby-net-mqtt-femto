@@ -296,30 +296,6 @@ module Net
         STATE_NAMES[_fsm_state_impl] || "unknown"
       end
 
-      def connecting?
-        native_state == "connecting" || native_state == "connack_wait"
-      end
-
-      def active?
-        native_state == "active"
-      end
-
-      def disconnecting?
-        native_state == "disconnecting"
-      end
-
-      def timed_out?
-        native_state == "timeout"
-      end
-
-      def publishing?
-        native_state == "publishing"
-      end
-
-      def subscribing?
-        native_state == "subscribing"
-      end
-
       def receive_queue_size
         _receive_queue_size_impl
       end
@@ -374,12 +350,12 @@ module Net
         {
           connected: connected?,
           native_state: native_state,
-          connecting: connecting?,
-          active: active?,
-          disconnecting: disconnecting?,
-          timed_out: timed_out?,
-          publishing: publishing?,
-          subscribing: subscribing?,
+          connecting: native_state == "connecting" || native_state == "connack_wait",
+          active: native_state == "active",
+          disconnecting: native_state == "disconnecting",
+          timed_out: native_state == "timeout",
+          publishing: native_state == "publishing",
+          subscribing: native_state == "subscribing",
           connection_status: connection_status,
           connection_status_name: connection_status_name,
           connection_error: connection_error?,

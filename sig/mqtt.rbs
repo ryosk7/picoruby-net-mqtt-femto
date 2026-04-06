@@ -15,12 +15,6 @@ module Net
       def connection_status_name: () -> String
       def connection_error?: () -> bool
       def native_state: () -> String
-      def connecting?: () -> bool
-      def active?: () -> bool
-      def disconnecting?: () -> bool
-      def timed_out?: () -> bool
-      def publishing?: () -> bool
-      def subscribing?: () -> bool
       def receive_queue_size: () -> Integer
       def message_available?: () -> bool
       def drain_messages: () -> Array[[String, String]]
