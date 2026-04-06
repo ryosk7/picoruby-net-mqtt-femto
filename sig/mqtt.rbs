@@ -27,7 +27,7 @@ module Net
       def stats: () -> Hash[Symbol, untyped]
       attr_accessor auto_resubscribe: bool
 
-      private def _connect_impl: (String, Integer, String, Integer, String?, String?, String?, String?, Integer, bool, bool) -> bool
+      private def _connect_impl: (String, Integer, String, Integer, String?, String?, String?, String?, Integer, bool, bool, Integer?, Integer) -> bool
       private def _connection_status_impl: () -> Integer
       private def _fsm_state_impl: () -> Integer
       private def _poll_impl: () -> void

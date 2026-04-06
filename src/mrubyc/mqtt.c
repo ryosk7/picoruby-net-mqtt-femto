@@ -10,7 +10,8 @@ extern int MQTT_connect_impl(const char *host, int port, const char *client_id,
                              int keep_alive, const char *username,
                              const char *password, const char *will_topic,
                              const char *will_message, int will_qos,
-                             int will_retain, int ssl);
+                             int will_retain, int ssl,
+                             uintptr_t ca_addr, int ca_size);
 extern void MQTT_poll_impl(void);
 extern void MQTT_poll_sleep_impl(int ms);
 extern int MQTT_is_connected_impl(void);
@@ -32,7 +33,7 @@ extern void MQTT_disconnect_impl(void);
 static void
 c_mqtt_connect(mrbc_vm *vm, mrbc_value v[], int argc)
 {
-  if (argc != 11) {
+  if (argc != 13) {
     SET_FALSE_RETURN();
     return;
   }
@@ -83,6 +84,14 @@ c_mqtt_connect(mrbc_vm *vm, mrbc_value v[], int argc)
     SET_FALSE_RETURN();
     return;
   }
+  if (v[12].tt != MRBC_TT_NIL && v[12].tt != MRBC_TT_INTEGER) {
+    SET_FALSE_RETURN();
+    return;
+  }
+  if (v[13].tt != MRBC_TT_INTEGER) {
+    SET_FALSE_RETURN();
+    return;
+  }
 
   const char *host = (const char *)GET_STRING_ARG(1);
   int port = GET_INT_ARG(2);
@@ -95,10 +104,12 @@ c_mqtt_connect(mrbc_vm *vm, mrbc_value v[], int argc)
   int will_qos = GET_INT_ARG(9);
   int will_retain = (v[10].tt == MRBC_TT_TRUE) ? 1 : 0;
   int ssl = (v[11].tt == MRBC_TT_TRUE) ? 1 : 0;
+  uintptr_t ca_addr = (v[12].tt == MRBC_TT_INTEGER) ? (uintptr_t)GET_INT_ARG(12) : (uintptr_t)0;
+  int ca_size = GET_INT_ARG(13);
 
   int result = MQTT_connect_impl(host, port, client_id, keep_alive, username,
                                  password, will_topic, will_message,
-                                 will_qos, will_retain, ssl);
+                                 will_qos, will_retain, ssl, ca_addr, ca_size);
 
   if (result == 0) {
     SET_TRUE_RETURN();

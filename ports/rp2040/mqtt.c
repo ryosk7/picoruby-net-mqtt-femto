@@ -206,7 +206,8 @@ int MQTT_connect_impl(const char *host, int port, const char *client_id,
                       int keep_alive, const char *username,
                       const char *password, const char *will_topic,
                       const char *will_message, int will_qos,
-                      int will_retain, int ssl) {
+                      int will_retain, int ssl,
+                      uintptr_t ca_addr, int ca_size) {
   memset(&g_ctx, 0, sizeof(g_ctx));
 
   ip_addr_t ip;
@@ -234,7 +235,9 @@ int MQTT_connect_impl(const char *host, int port, const char *client_id,
   client_info.will_qos = (u8_t)will_qos;
   client_info.will_retain = (u8_t)(will_retain ? 1 : 0);
   if (ssl) {
-    g_ctx.tls_config = altcp_tls_create_config_client(NULL, 0);
+    const u8_t *ca = (ca_addr != 0 && ca_size > 0) ? (const u8_t *)(uintptr_t)ca_addr : NULL;
+    size_t ca_len = (ca_addr != 0 && ca_size > 0) ? (size_t)ca_size : 0;
+    g_ctx.tls_config = altcp_tls_create_config_client(ca, ca_len);
     if (g_ctx.tls_config == NULL) {
       lwip_begin();
       mqtt_client_free((mqtt_client_t*)g_ctx.client);
