@@ -1,3 +1,0 @@
-foo
-__END__
-Available in DATA constant
