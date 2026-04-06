@@ -163,8 +163,6 @@ puts client.connection_status_name
 puts client.connection_error?
 puts client.receive_queue_size
 puts client.message_available?
-puts client.receive_queue_empty?
-puts client.pending_operation?
 puts client.pending_publish?
 puts client.pending_publish_topic
 puts client.pending_publish_qos
@@ -174,7 +172,6 @@ pp client.stats
 pp client.subscriptions
 puts client.subscribed?("sensors/#")
 puts client.subscription_qos("sensors/#")
-puts client.subscription_count
 pp client.drain_messages
 ```
 

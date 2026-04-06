@@ -328,10 +328,6 @@ module Net
         receive_queue_size > 0
       end
 
-      def receive_queue_empty?
-        receive_queue_size == 0
-      end
-
       def drain_messages
         messages = []
 
@@ -362,10 +358,6 @@ module Net
         !pending_subscribe_topic.nil?
       end
 
-      def pending_operation?
-        pending_publish? || pending_subscribe?
-      end
-
       def subscriptions
         @subscriptions.dup
       end
@@ -376,10 +368,6 @@ module Net
 
       def subscription_qos(topic)
         @subscriptions[topic]
-      end
-
-      def subscription_count
-        @subscriptions.length
       end
 
       def stats
@@ -397,14 +385,14 @@ module Net
           connection_error: connection_error?,
           receive_queue_size: receive_queue_size,
           message_available: message_available?,
-          receive_queue_empty: receive_queue_empty?,
-          pending_operation: pending_operation?,
+          receive_queue_empty: receive_queue_size == 0,
+          pending_operation: pending_publish? || pending_subscribe?,
           pending_publish: pending_publish?,
           pending_publish_topic: pending_publish_topic,
           pending_publish_qos: pending_publish_qos,
           pending_subscribe: pending_subscribe?,
           pending_subscribe_topic: pending_subscribe_topic,
-          subscriptions: subscription_count,
+          subscriptions: @subscriptions.length,
           auto_resubscribe: @auto_resubscribe,
         }
       end

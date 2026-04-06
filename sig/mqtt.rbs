@@ -23,18 +23,15 @@ module Net
       def subscribing?: () -> bool
       def receive_queue_size: () -> Integer
       def message_available?: () -> bool
-      def receive_queue_empty?: () -> bool
       def drain_messages: () -> Array[[String, String]]
       def pending_publish_topic: () -> String?
       def pending_publish?: () -> bool
       def pending_publish_qos: () -> Integer
       def pending_subscribe_topic: () -> String?
       def pending_subscribe?: () -> bool
-      def pending_operation?: () -> bool
       def subscriptions: () -> Hash[String, Integer]
       def subscribed?: (String) -> bool
       def subscription_qos: (String) -> Integer?
-      def subscription_count: () -> Integer
       def stats: () -> Hash[Symbol, untyped]
       attr_accessor auto_resubscribe: bool
 
