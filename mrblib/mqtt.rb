@@ -354,6 +354,10 @@ module Net
         drain_messages.map { |topic, _payload| topic }
       end
 
+      def message_count
+        drain_messages.length
+      end
+
       def drain_each_message
         raise ArgumentError, "block required" unless block_given?
 

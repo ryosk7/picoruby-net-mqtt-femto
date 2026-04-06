@@ -28,6 +28,7 @@ module Net
       def each_message: () -> Enumerator[[String, String], Array[[String, String]]]
       def each_message: () { (String, String) -> untyped } -> Array[[String, String]]
       def message_topics: () -> Array[String]
+      def message_count: () -> Integer
       def drain_each_message: () { (String, String) -> untyped } -> Integer
       def pending_publish_topic: () -> String?
       def pending_publish?: () -> bool
