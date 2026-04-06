@@ -164,8 +164,6 @@ puts client.pending_subscribe?
 puts client.pending_subscribe_topic
 pp client.stats
 pp client.subscriptions
-puts client.subscribed?("sensors/#")
-puts client.subscription_qos("sensors/#")
 pp client.drain_messages
 ```
 

@@ -24,8 +24,6 @@ module Net
       def pending_subscribe_topic: () -> String?
       def pending_subscribe?: () -> bool
       def subscriptions: () -> Hash[String, Integer]
-      def subscribed?: (String) -> bool
-      def subscription_qos: (String) -> Integer?
       def stats: () -> Hash[Symbol, untyped]
       attr_accessor auto_resubscribe: bool
 
