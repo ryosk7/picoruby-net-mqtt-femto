@@ -22,6 +22,8 @@ static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len,
                                   u8_t flags);
 static void mqtt_request_cb(void *arg, err_t err);
 static void mqtt_enqueue_message(mqtt_context_t *ctx);
+static int mqtt_wait_pending_clear(volatile char *pending_slot,
+                                   mqtt_fsm_state_t active_state);
 
 void MQTT_poll_impl(void) {
   for (int i = 0; i < 3; i++) {
@@ -173,6 +175,32 @@ static void mqtt_request_cb(void *arg, err_t err) {
   }
 }
 
+static int mqtt_wait_pending_clear(volatile char *pending_slot,
+                                   mqtt_fsm_state_t active_state) {
+  int waited_ms = 0;
+  const int poll_interval_ms = 10;
+  const int timeout_ms = 3000;
+
+  while (*pending_slot != '\0' && waited_ms < timeout_ms) {
+    if (!poll_state()) {
+      return -1;
+    }
+    Net_busy_wait_ms(poll_interval_ms);
+    waited_ms += poll_interval_ms;
+  }
+
+  if (*pending_slot != '\0') {
+    g_ctx.fsm_state = MQTT_STATE_TIMEOUT;
+    return -1;
+  }
+
+  if (g_ctx.fsm_state != active_state) {
+    return -1;
+  }
+
+  return 0;
+}
+
 int MQTT_connect_impl(const char *host, int port, const char *client_id,
                       int keep_alive, const char *username,
                       const char *password, const char *will_topic,
@@ -244,18 +272,7 @@ int MQTT_publish_impl(const char *topic, const char *payload, int len,
   g_ctx.publish_retain = retain ? 1 : 0;
 
   // Poll state will handle the actual publishing
-  int timeout = 100;
-  while (g_ctx.topic_to_pub[0] != '\0' && timeout-- > 0) {
-    if (!poll_state()) return -1;
-    Net_busy_wait_ms(10);
-  }
-
-  if (g_ctx.topic_to_pub[0] != '\0') {
-    g_ctx.fsm_state = MQTT_STATE_TIMEOUT;
-    return -1;
-  }
-
-  return 0;
+  return mqtt_wait_pending_clear(g_ctx.topic_to_pub, MQTT_STATE_ACTIVE);
 }
 
 int MQTT_subscribe_impl(const char *topic, int qos) {
@@ -268,18 +285,7 @@ int MQTT_subscribe_impl(const char *topic, int qos) {
   g_ctx.subscribe_qos = qos;
 
   // Poll state will handle the actual subscribing
-  int timeout = 100;
-  while (g_ctx.topic_to_sub[0] != '\0' && timeout-- > 0) {
-    if (!poll_state()) return -1;
-    Net_busy_wait_ms(10);
-  }
-
-  if (g_ctx.topic_to_sub[0] != '\0') {
-    g_ctx.fsm_state = MQTT_STATE_TIMEOUT;
-    return -1;
-  }
-
-  return 0;
+  return mqtt_wait_pending_clear(g_ctx.topic_to_sub, MQTT_STATE_ACTIVE);
 }
 
 int MQTT_unsubscribe_impl(const char *topic) {
