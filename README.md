@@ -179,6 +179,7 @@ end
 puts client.drain_each_subscription { |topic, qos| puts "#{topic}: #{qos}" }
 puts client.subscribed?("sensors/#")
 puts client.subscription_qos("sensors/#")
+pp client.subscription_topics
 puts client.subscription_count
 client.each_message do |topic, payload|
   puts "#{topic}: #{payload}"

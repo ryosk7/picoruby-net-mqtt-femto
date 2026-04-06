@@ -425,6 +425,10 @@ module Net
         @subscriptions[topic]
       end
 
+      def subscription_topics
+        @subscriptions.keys
+      end
+
       def subscription_count
         @subscriptions.length
       end

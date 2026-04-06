@@ -41,6 +41,7 @@ module Net
       def drain_each_subscription: () { (String, Integer) -> untyped } -> Integer
       def subscribed?: (String) -> bool
       def subscription_qos: (String) -> Integer?
+      def subscription_topics: () -> Array[String]
       def subscription_count: () -> Integer
       def stats: () -> Hash[Symbol, untyped]
       attr_accessor auto_resubscribe: bool
