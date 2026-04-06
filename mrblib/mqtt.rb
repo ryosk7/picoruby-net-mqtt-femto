@@ -296,40 +296,12 @@ module Net
         STATE_NAMES[_fsm_state_impl] || "unknown"
       end
 
-      def connecting?
-        native_state == "connecting" || native_state == "connack_wait"
-      end
-
-      def active?
-        native_state == "active"
-      end
-
-      def disconnecting?
-        native_state == "disconnecting"
-      end
-
-      def timed_out?
-        native_state == "timeout"
-      end
-
-      def publishing?
-        native_state == "publishing"
-      end
-
-      def subscribing?
-        native_state == "subscribing"
-      end
-
       def receive_queue_size
         _receive_queue_size_impl
       end
 
       def message_available?
         receive_queue_size > 0
-      end
-
-      def receive_queue_empty?
-        receive_queue_size == 0
       end
 
       def drain_messages
@@ -362,49 +334,33 @@ module Net
         !pending_subscribe_topic.nil?
       end
 
-      def pending_operation?
-        pending_publish? || pending_subscribe?
-      end
-
       def subscriptions
         @subscriptions.dup
-      end
-
-      def subscribed?(topic)
-        @subscriptions.key?(topic)
-      end
-
-      def subscription_qos(topic)
-        @subscriptions[topic]
-      end
-
-      def subscription_count
-        @subscriptions.length
       end
 
       def stats
         {
           connected: connected?,
           native_state: native_state,
-          connecting: connecting?,
-          active: active?,
-          disconnecting: disconnecting?,
-          timed_out: timed_out?,
-          publishing: publishing?,
-          subscribing: subscribing?,
+          connecting: native_state == "connecting" || native_state == "connack_wait",
+          active: native_state == "active",
+          disconnecting: native_state == "disconnecting",
+          timed_out: native_state == "timeout",
+          publishing: native_state == "publishing",
+          subscribing: native_state == "subscribing",
           connection_status: connection_status,
           connection_status_name: connection_status_name,
           connection_error: connection_error?,
           receive_queue_size: receive_queue_size,
           message_available: message_available?,
-          receive_queue_empty: receive_queue_empty?,
-          pending_operation: pending_operation?,
+          receive_queue_empty: receive_queue_size == 0,
+          pending_operation: pending_publish? || pending_subscribe?,
           pending_publish: pending_publish?,
           pending_publish_topic: pending_publish_topic,
           pending_publish_qos: pending_publish_qos,
           pending_subscribe: pending_subscribe?,
           pending_subscribe_topic: pending_subscribe_topic,
-          subscriptions: subscription_count,
+          subscriptions: @subscriptions.length,
           auto_resubscribe: @auto_resubscribe,
         }
       end
