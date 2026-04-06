@@ -86,7 +86,7 @@ client = Net::MQTT::Client.new(
   "test.mosquitto.org",
   8883,
   ssl: true,
-  ca_file: "/certs/ca.crt"
+  ca_file: "/flash/ca.crt"
 )
 
 client.connect
@@ -102,6 +102,7 @@ Current limitations:
 - `ca_file` is supported for CA-only verification
 - `cert_file` and `key_file` are not supported yet
 - the CA certificate file must already exist on the device filesystem
+- this repository does not bundle a production CA certificate for `/flash/ca.crt`
 
 ### Reconnect With Backoff
 
