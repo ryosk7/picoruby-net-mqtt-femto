@@ -1,6 +1,6 @@
 /*
- * Minimal Pico SDK config_autogen replacement for plain mruby rake builds.
- * CMake-generated builds should use the real generated header instead.
+ * Minimal Pico SDK config_autogen replacement for the external gem build stage.
+ * The final R2P2 firmware build uses the generated header from the CMake build.
  */
 
 #ifndef _PICO_CONFIG_AUTOGEN_H
