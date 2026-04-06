@@ -156,11 +156,8 @@ puts client.connection_status
 puts client.connection_status_name
 puts client.connection_error?
 puts client.receive_queue_size
-puts client.message_available?
-puts client.pending_publish?
 puts client.pending_publish_topic
 puts client.pending_publish_qos
-puts client.pending_subscribe?
 puts client.pending_subscribe_topic
 pp client.stats
 pp client.subscriptions

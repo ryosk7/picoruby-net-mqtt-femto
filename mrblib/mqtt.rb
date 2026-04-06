@@ -196,7 +196,7 @@ module Net
 
         waited_ms = 0
         while waited_ms <= timeout_ms
-          return true if message_available?
+          return true if receive_queue_size > 0
           return false unless connected?
           poll_sleep_ms(poll_interval_ms)
           waited_ms += poll_interval_ms
@@ -300,10 +300,6 @@ module Net
         _receive_queue_size_impl
       end
 
-      def message_available?
-        receive_queue_size > 0
-      end
-
       def drain_messages
         messages = []
 
@@ -318,20 +314,12 @@ module Net
         _pending_publish_topic_impl
       end
 
-      def pending_publish?
-        !pending_publish_topic.nil?
-      end
-
       def pending_publish_qos
         _pending_publish_qos_impl
       end
 
       def pending_subscribe_topic
         _pending_subscribe_topic_impl
-      end
-
-      def pending_subscribe?
-        !pending_subscribe_topic.nil?
       end
 
       def subscriptions
@@ -352,13 +340,13 @@ module Net
           connection_status_name: connection_status_name,
           connection_error: connection_error?,
           receive_queue_size: receive_queue_size,
-          message_available: message_available?,
+          message_available: receive_queue_size > 0,
           receive_queue_empty: receive_queue_size == 0,
-          pending_operation: pending_publish? || pending_subscribe?,
-          pending_publish: pending_publish?,
+          pending_operation: !pending_publish_topic.nil? || !pending_subscribe_topic.nil?,
+          pending_publish: !pending_publish_topic.nil?,
           pending_publish_topic: pending_publish_topic,
           pending_publish_qos: pending_publish_qos,
-          pending_subscribe: pending_subscribe?,
+          pending_subscribe: !pending_subscribe_topic.nil?,
           pending_subscribe_topic: pending_subscribe_topic,
           subscriptions: @subscriptions.length,
           auto_resubscribe: @auto_resubscribe,
