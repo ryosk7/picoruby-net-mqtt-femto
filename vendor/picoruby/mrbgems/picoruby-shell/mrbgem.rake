@@ -40,7 +40,9 @@ MRuby::Gem::Specification.new('picoruby-shell') do |spec|
   executable_mrbfiles = Array.new
   executable_dir = "#{build_dir}/shell_executables"
   directory executable_dir
+  excluded_executables = %w[rapicco vim]
   Dir.glob("#{dir}/shell_executables/*.rb") do |rbfile|
+    next if excluded_executables.include?(File.basename(rbfile, ".rb"))
     mrbfile = "#{executable_dir}/#{rbfile.pathmap('%n')}.c"
     file mrbfile => [rbfile, executable_dir, executables_src] do |t|
       File.open(t.name, 'w') do |f|
