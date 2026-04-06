@@ -185,6 +185,7 @@ puts client.subscription_count
 client.each_message do |topic, payload|
   puts "#{topic}: #{payload}"
 end
+pp client.message_topics
 puts client.drain_each_message { |topic, payload| puts "#{topic}: #{payload}" }
 pp client.drain_messages
 ```
