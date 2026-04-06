@@ -374,6 +374,13 @@ module Net
         pending_publish? || pending_subscribe?
       end
 
+      def pending_topics
+        topics = []
+        topics << pending_publish_topic if pending_publish?
+        topics << pending_subscribe_topic if pending_subscribe?
+        topics
+      end
+
       def subscriptions
         @subscriptions.dup
       end
