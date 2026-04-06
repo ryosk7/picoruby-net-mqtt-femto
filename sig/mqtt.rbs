@@ -34,6 +34,8 @@ module Net
       def pending_subscribe?: () -> bool
       def pending_operation?: () -> bool
       def subscriptions: () -> Hash[String, Integer]
+      def each_subscription: () -> Enumerator[[String, Integer], Hash[String, Integer]]
+      def each_subscription: () { (String, Integer) -> untyped } -> Hash[String, Integer]
       def subscribed?: (String) -> bool
       def subscription_qos: (String) -> Integer?
       def subscription_count: () -> Integer

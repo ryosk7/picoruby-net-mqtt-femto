@@ -378,6 +378,16 @@ module Net
         @subscriptions.dup
       end
 
+      def each_subscription
+        return enum_for(:each_subscription) unless block_given?
+
+        @subscriptions.each do |topic, qos|
+          yield(topic, qos)
+        end
+
+        @subscriptions
+      end
+
       def subscribed?(topic)
         @subscriptions.key?(topic)
       end
