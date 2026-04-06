@@ -84,9 +84,6 @@ module Net
       end
 
       def connect
-        if @ssl
-          raise MQTTError.new("TLS not supported")
-        end
         if @keep_alive < 0 || @keep_alive > 65_535
           raise MQTTError.new("keep_alive must be between 0 and 65535")
         end
@@ -100,7 +97,7 @@ module Net
         # Initiate non-blocking connection
         result = _connect_impl(@host, @port, @client_id, @keep_alive,
                                @username, @password, @will_topic,
-                               @will_message, @will_qos, @will_retain)
+                               @will_message, @will_qos, @will_retain, @ssl)
         raise ConnectionError.new(connection_error_message) unless result
 
         # Short test loop (~3 seconds timeout)

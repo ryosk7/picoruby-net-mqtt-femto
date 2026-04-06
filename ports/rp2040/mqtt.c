@@ -5,6 +5,7 @@
 
 #include "../../include/mqtt.h"
 #include "socket.h"
+#include "lwip/altcp_tls.h"
 #include "lwip/apps/mqtt.h"
 #include "lwip/apps/mqtt_priv.h"
 #include "lwip/timeouts.h"
@@ -205,7 +206,7 @@ int MQTT_connect_impl(const char *host, int port, const char *client_id,
                       int keep_alive, const char *username,
                       const char *password, const char *will_topic,
                       const char *will_message, int will_qos,
-                      int will_retain) {
+                      int will_retain, int ssl) {
   memset(&g_ctx, 0, sizeof(g_ctx));
 
   ip_addr_t ip;
@@ -232,6 +233,17 @@ int MQTT_connect_impl(const char *host, int port, const char *client_id,
   client_info.will_msg = will_message;
   client_info.will_qos = (u8_t)will_qos;
   client_info.will_retain = (u8_t)(will_retain ? 1 : 0);
+  if (ssl) {
+    g_ctx.tls_config = altcp_tls_create_config_client(NULL, 0);
+    if (g_ctx.tls_config == NULL) {
+      lwip_begin();
+      mqtt_client_free((mqtt_client_t*)g_ctx.client);
+      lwip_end();
+      g_ctx.client = NULL;
+      return -1;
+    }
+    client_info.tls_config = (struct altcp_tls_config *)g_ctx.tls_config;
+  }
 
   lwip_begin();
   mqtt_set_inpub_callback((mqtt_client_t*)g_ctx.client, mqtt_incoming_publish_cb,
@@ -246,6 +258,10 @@ int MQTT_connect_impl(const char *host, int port, const char *client_id,
   lwip_end();
 
   if (err != ERR_OK) {
+    if (g_ctx.tls_config != NULL) {
+      altcp_tls_free_config((struct altcp_tls_config *)g_ctx.tls_config);
+      g_ctx.tls_config = NULL;
+    }
     lwip_begin();
     mqtt_client_free((mqtt_client_t*)g_ctx.client);
     lwip_end();
@@ -372,6 +388,10 @@ void MQTT_disconnect_impl() {
     mqtt_disconnect((mqtt_client_t*)g_ctx.client);
     mqtt_client_free((mqtt_client_t*)g_ctx.client);
     lwip_end();
+    if (g_ctx.tls_config != NULL) {
+      altcp_tls_free_config((struct altcp_tls_config *)g_ctx.tls_config);
+      g_ctx.tls_config = NULL;
+    }
     memset(&g_ctx, 0, sizeof(g_ctx));
   }
 }
