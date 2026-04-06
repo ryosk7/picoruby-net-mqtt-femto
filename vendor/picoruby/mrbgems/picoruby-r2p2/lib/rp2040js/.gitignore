@@ -1,0 +1,6 @@
+node_modules
+dist
+*.hex
+*.elf
+*.uf2
+*.img

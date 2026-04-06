@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'release*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Generate autogen files
+      run: |
+        make autogen
+        sed -E -e '/^[A-Z]+_VERSION/!d' mrblib/global.rb > src/VERSION
+
+    - name: Create release archive with autogen files
+      run: |
+        VERSION=${GITHUB_REF_NAME}
+        PREFIX="mrubyc-${VERSION}"
+        git archive --prefix="${PREFIX}/" HEAD | tar x
+        cp src/_autogen_*.h src/VERSION "${PREFIX}/src/"
+        tar czf "mrubyc-${VERSION}.tar.gz" "${PREFIX}/"
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: mrubyc-*.tar.gz
+        generate_release_notes: true

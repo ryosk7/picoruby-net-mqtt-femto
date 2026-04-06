@@ -1,0 +1,10 @@
+module MbedTLS
+  class Digest
+    type algorithm_t = :none | :sha1 | :sha256
+    SUPPORTED_ALGORITHMS: Hash[algorithm_t, Integer]
+
+    def self.new: (algorithm_t algorithm) -> MbedTLS::Digest
+    def update: (String input) -> MbedTLS::Digest
+    def finish: () -> String
+  end
+end

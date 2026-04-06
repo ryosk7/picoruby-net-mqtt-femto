@@ -1,0 +1,51 @@
+# Layer switching keycode module
+module LayerKeycode
+  # Base values for special layer keycodes
+  MO_BASE: Integer
+  TG_BASE: Integer
+  LT_BASE: Integer
+  MT_BASE: Integer
+  SM_BASE: Integer
+  MC_BASE: Integer
+
+  # Create a momentary layer switch keycode
+  def MO: (Integer layer_index) -> Integer
+  # Create a Layer-Tap keycode
+  def LT: (Integer layer_index, Integer tap_keycode) -> Integer
+  # Create a toggle layer switch keycode
+  def TG: (Integer layer_index) -> Integer
+  # Create a Modifier-Tap keycode
+  def MT: (Integer modifier_keycode, Integer tap_keycode) -> Integer
+  # Check if keycode is a momentary layer switch
+  def is_mo?: (Integer keycode) -> bool
+  # Check if keycode is a Layer-Tap
+  def is_lt?: (Integer keycode) -> bool
+  # Check if keycode is a toggle layer switch
+  def is_tg?: (Integer keycode) -> bool
+  # Check if keycode is a Modifier-Tap
+  def is_mt?: (Integer keycode) -> bool
+  # Extract layer index from MO keycode
+  def mo_layer: (Integer keycode) -> Integer
+  # Extract layer index from LT keycode
+  def lt_layer: (Integer keycode) -> Integer
+  # Extract tap keycode from LT keycode
+  def lt_tap_keycode: (Integer keycode) -> Integer
+  # Extract layer index from TG keycode
+  def tg_layer: (Integer keycode) -> Integer
+  # Extract modifier index from MT keycode
+  def mt_modifier_index: (Integer keycode) -> Integer
+  # Extract tap keycode from MT keycode
+  def mt_tap_keycode: (Integer keycode) -> Integer
+  # Create a Shift-modified keycode (always sends Left Shift + keycode)
+  def S: (Integer keycode) -> Integer
+  # Check if keycode is a Shift-modified keycode
+  def is_sm?: (Integer keycode) -> bool
+  # Extract base keycode from SM keycode
+  def sm_keycode: (Integer keycode) -> Integer
+  # Create a macro keycode that types a registered string on press
+  def MC: (Integer macro_index) -> Integer
+  # Check if keycode is a macro keycode
+  def is_mc?: (Integer keycode) -> bool
+  # Extract macro slot index from MC keycode
+  def mc_index: (Integer keycode) -> Integer
+end

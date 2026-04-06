@@ -1,0 +1,16 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+ruby "~> 3.4.0"
+
+gemspec path: "../.."
+
+gem "onigmo", platforms: :ruby
+gem "parser"
+gem "rake-compiler"
+gem "rake"
+gem "rbs"
+gem "ruby_memcheck"
+gem "ruby_parser"
+gem "test-unit"
