@@ -55,4 +55,5 @@ MRuby::CrossBuild.new("r2p2-picoruby-pico_w") do |conf|
   # Rapi Pico's flash ROM (2MB) can't hold both net and ble
   # conf.gem core: 'picoruby-ble'
   conf.gem core: 'picoruby-keyboard'
+  conf.gem gemdir: File.expand_path("../../..", __dir__)
 end

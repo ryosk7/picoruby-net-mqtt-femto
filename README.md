@@ -43,17 +43,17 @@ spec.add_dependency 'picoruby-net-mqtt-femto', 'ryosk7/picoruby-net-mqtt-femto'
 
 ## Build In This Repository
 
-This repository vendors `picoruby` under `vendor/picoruby` and includes a dedicated build config for Pico W.
+This repository vendors `picoruby` under `vendor/picoruby` and is intended to build through the existing R2P2 flow.
 
 ```sh
 cd vendor/picoruby
-MRUBY_CONFIG=build_config/picoruby-net-mqtt-femto-pico_w.rb rake
+rake r2p2:picoruby:pico_w:prod
 ```
 
-The build config loads this repository as an external gem with:
+The generated firmware files are placed under:
 
-```ruby
-conf.gem gemdir: File.expand_path("../../..", __dir__)
+```text
+vendor/picoruby/build/r2p2/picoruby/pico_w/prod/
 ```
 
 ## Usage

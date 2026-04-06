@@ -13,6 +13,10 @@ if (NOT TARGET picotool)
         set(PICOTOOL_FETCH_FROM_GIT_PATH $ENV{PICOTOOL_FETCH_FROM_GIT_PATH})
         message("Using PICOTOOL_FETCH_FROM_GIT_PATH from environment ('${PICOTOOL_FETCH_FROM_GIT_PATH}')")
     endif ()
+    if (DEFINED ENV{PICOTOOL_SOURCE_DIR} AND (NOT PICOTOOL_SOURCE_DIR))
+        set(PICOTOOL_SOURCE_DIR $ENV{PICOTOOL_SOURCE_DIR})
+        message("Using PICOTOOL_SOURCE_DIR from environment ('${PICOTOOL_SOURCE_DIR}')")
+    endif ()
 
     include(FetchContent)
     if (PICOTOOL_FETCH_FROM_GIT_PATH)
@@ -44,15 +48,21 @@ if (NOT TARGET picotool)
                 set(PICOTOOL_GIT_BRANCH ${PICO_SDK_VERSION_STRING})
             endif()
         endif()
-        message("Downloading Picotool")
-        FetchContent_Populate(picotool QUIET
-            GIT_REPOSITORY ${PICOTOOL_GIT_REPOSITORY_URL}
-            GIT_TAG ${PICOTOOL_GIT_BRANCH}
+        if (PICOTOOL_SOURCE_DIR)
+            get_filename_component(picotool_SOURCE_DIR "${PICOTOOL_SOURCE_DIR}" ABSOLUTE)
+            set(picotool_BINARY_DIR ${picotool_INSTALL_DIR}/picotool-build)
+            message("Using local Picotool source")
+        else()
+            message("Downloading Picotool")
+            FetchContent_Populate(picotool QUIET
+                GIT_REPOSITORY ${PICOTOOL_GIT_REPOSITORY_URL}
+                GIT_TAG ${PICOTOOL_GIT_BRANCH}
 
-            SOURCE_DIR ${picotool_INSTALL_DIR}/picotool-src
-            BINARY_DIR ${picotool_INSTALL_DIR}/picotool-build
-            SUBBUILD_DIR ${picotool_INSTALL_DIR}/picotool-subbuild
-        )
+                SOURCE_DIR ${picotool_INSTALL_DIR}/picotool-src
+                BINARY_DIR ${picotool_INSTALL_DIR}/picotool-build
+                SUBBUILD_DIR ${picotool_INSTALL_DIR}/picotool-subbuild
+            )
+        endif()
 
         add_custom_target(picotoolForceReconfigure
             ${CMAKE_COMMAND} -E touch_nocreate "${CMAKE_SOURCE_DIR}/CMakeLists.txt"

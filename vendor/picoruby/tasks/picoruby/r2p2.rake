@@ -5,6 +5,7 @@ load "#{R2P2_GEM_DIR}/r2p2_config.rb"
 
 ENV["PICO_SDK_PATH"] ||= "#{R2P2_GEM_DIR}/lib/pico-sdk"
 ENV["PICO_EXTRAS_PATH"] ||= "#{R2P2_GEM_DIR}/lib/pico-extras"
+ENV["PICOTOOL_SOURCE_DIR"] ||= "#{MRUBY_ROOT}/../picotool-src"
 
 def r2p2_mruby_config(vm, board)
   "#{MRUBY_ROOT}/build_config/r2p2-#{vm}-#{board}.rb"
@@ -61,7 +62,7 @@ namespace :r2p2 do
 
   task :check_pico_sdk => :check_pico_sdk_path do
     FileUtils.cd ENV['PICO_SDK_PATH'] do
-      if `git describe --tags --exact-match`.chomp != PICO_SDK_TAG
+      if File.directory?(".git") && `git describe --tags --exact-match`.chomp != PICO_SDK_TAG
         raise <<~MSG
           pico-sdk #{PICO_SDK_TAG} is not checked out!\n
           Tips for dealing with:\n
@@ -73,7 +74,7 @@ namespace :r2p2 do
       end
     end
     FileUtils.cd ENV['PICO_EXTRAS_PATH'] do
-      if `git describe --tags --exact-match`.chomp != PICO_EXTRAS_TAG
+      if File.directory?(".git") && `git describe --tags --exact-match`.chomp != PICO_EXTRAS_TAG
         raise <<~MSG
           pico-extras #{PICO_EXTRAS_TAG} is not checked out!\n
           Tips for dealing with:\n
