@@ -45,6 +45,7 @@ typedef struct {
 
 typedef struct {
   void *client;  // Platform-specific client pointer
+  void *tls_config; // Platform-specific TLS config pointer
   mqtt_fsm_state_t fsm_state;
 
   char topic_to_sub[MQTT_TOPIC_MAX_LEN];
@@ -73,13 +74,15 @@ int MQTT_connect_impl(const char *host, int port, const char *client_id,
                       int keep_alive, const char *username,
                       const char *password, const char *will_topic,
                       const char *will_message, int will_qos,
-                      int will_retain);
+                      int will_retain, int ssl,
+                      uintptr_t ca_addr, int ca_size);
 void MQTT_poll_impl(void);
 void MQTT_poll_sleep_impl(int ms);
 int MQTT_is_connected_impl(void);
 int MQTT_connection_status_impl(void);
 int MQTT_fsm_state_impl(void);
 int MQTT_receive_queue_size_impl(void);
+int MQTT_clear_timeout_impl(void);
 const char *MQTT_pending_publish_topic_impl(void);
 int MQTT_pending_publish_qos_impl(void);
 const char *MQTT_pending_subscribe_topic_impl(void);

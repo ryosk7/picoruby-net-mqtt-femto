@@ -10,13 +10,15 @@ extern int MQTT_connect_impl(const char *host, int port, const char *client_id,
                              int keep_alive, const char *username,
                              const char *password, const char *will_topic,
                              const char *will_message, int will_qos,
-                             int will_retain);
+                             int will_retain, int ssl,
+                             uintptr_t ca_addr, int ca_size);
 extern void MQTT_poll_impl(void);
 extern void MQTT_poll_sleep_impl(int ms);
 extern int MQTT_is_connected_impl(void);
 extern int MQTT_connection_status_impl(void);
 extern int MQTT_fsm_state_impl(void);
 extern int MQTT_receive_queue_size_impl(void);
+extern int MQTT_clear_timeout_impl(void);
 extern const char *MQTT_pending_publish_topic_impl(void);
 extern int MQTT_pending_publish_qos_impl(void);
 extern const char *MQTT_pending_subscribe_topic_impl(void);
@@ -32,7 +34,7 @@ extern void MQTT_disconnect_impl(void);
 static void
 c_mqtt_connect(mrbc_vm *vm, mrbc_value v[], int argc)
 {
-  if (argc != 10) {
+  if (argc != 13) {
     SET_FALSE_RETURN();
     return;
   }
@@ -79,6 +81,18 @@ c_mqtt_connect(mrbc_vm *vm, mrbc_value v[], int argc)
     SET_FALSE_RETURN();
     return;
   }
+  if (v[11].tt != MRBC_TT_TRUE && v[11].tt != MRBC_TT_FALSE) {
+    SET_FALSE_RETURN();
+    return;
+  }
+  if (v[12].tt != MRBC_TT_NIL && v[12].tt != MRBC_TT_INTEGER) {
+    SET_FALSE_RETURN();
+    return;
+  }
+  if (v[13].tt != MRBC_TT_INTEGER) {
+    SET_FALSE_RETURN();
+    return;
+  }
 
   const char *host = (const char *)GET_STRING_ARG(1);
   int port = GET_INT_ARG(2);
@@ -90,10 +104,13 @@ c_mqtt_connect(mrbc_vm *vm, mrbc_value v[], int argc)
   const char *will_message = (v[8].tt == MRBC_TT_STRING) ? (const char *)GET_STRING_ARG(8) : NULL;
   int will_qos = GET_INT_ARG(9);
   int will_retain = (v[10].tt == MRBC_TT_TRUE) ? 1 : 0;
+  int ssl = (v[11].tt == MRBC_TT_TRUE) ? 1 : 0;
+  uintptr_t ca_addr = (v[12].tt == MRBC_TT_INTEGER) ? (uintptr_t)GET_INT_ARG(12) : (uintptr_t)0;
+  int ca_size = GET_INT_ARG(13);
 
   int result = MQTT_connect_impl(host, port, client_id, keep_alive, username,
                                  password, will_topic, will_message,
-                                 will_qos, will_retain);
+                                 will_qos, will_retain, ssl, ca_addr, ca_size);
 
   if (result == 0) {
     SET_TRUE_RETURN();
@@ -237,6 +254,16 @@ c_mqtt_receive_queue_size(mrbc_vm *vm, mrbc_value v[], int argc)
 }
 
 static void
+c_mqtt_clear_timeout(mrbc_vm *vm, mrbc_value v[], int argc)
+{
+  if (MQTT_clear_timeout_impl()) {
+    SET_TRUE_RETURN();
+  } else {
+    SET_FALSE_RETURN();
+  }
+}
+
+static void
 c_mqtt_pending_publish_topic(mrbc_vm *vm, mrbc_value v[], int argc)
 {
   const char *topic = MQTT_pending_publish_topic_impl();
@@ -297,6 +324,8 @@ void mrbc_net_mqtt_femto_init(mrbc_vm *vm) {
   mrbc_define_method(0, mrbc_class_object, "_fsm_state_impl", c_mqtt_fsm_state);
   mrbc_define_method(0, mrbc_class_object, "_receive_queue_size_impl",
                      c_mqtt_receive_queue_size);
+  mrbc_define_method(0, mrbc_class_object, "_clear_timeout_impl",
+                     c_mqtt_clear_timeout);
   mrbc_define_method(0, mrbc_class_object, "_pending_publish_topic_impl",
                      c_mqtt_pending_publish_topic);
   mrbc_define_method(0, mrbc_class_object, "_pending_publish_qos_impl",

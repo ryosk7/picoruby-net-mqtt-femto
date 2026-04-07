@@ -42,6 +42,9 @@ module Net
     }
 
     class Client
+      QOS1_MAX_RETRIES = 1
+      QOS1_RETRY_DELAY_MS = 100
+
       attr_reader :host, :port
       attr_accessor :client_id, :keep_alive, :clean_session
       attr_accessor :username, :password
@@ -60,7 +63,8 @@ module Net
         @will_message = options[:will_message]
         @will_qos = options[:will_qos] || 0
         @will_retain = options[:will_retain] || false
-        @auto_resubscribe = options.key?(:auto_resubscribe) ? options[:auto_resubscribe] : true
+        auto_resubscribe = options[:auto_resubscribe]
+        @auto_resubscribe = auto_resubscribe.nil? ? true : auto_resubscribe
         @ssl = options[:ssl] || false # not work
         @ca_file = options[:ca_file] # not work
         @cert_file = options[:cert_file] # not work
@@ -84,9 +88,6 @@ module Net
       end
 
       def connect
-        if @ssl
-          raise MQTTError.new("TLS not supported")
-        end
         if @keep_alive < 0 || @keep_alive > 65_535
           raise MQTTError.new("keep_alive must be between 0 and 65535")
         end
@@ -96,11 +97,20 @@ module Net
         if @will_topic.nil? != @will_message.nil?
           raise MQTTError.new("will_topic and will_message must be set together")
         end
+        ca_addr = nil
+        ca_size = 0
+        if @ssl && @ca_file
+          File.open(@ca_file) do |f|
+            ca_addr = f.physical_address
+            ca_size = f.size
+          end
+        end
 
         # Initiate non-blocking connection
         result = _connect_impl(@host, @port, @client_id, @keep_alive,
                                @username, @password, @will_topic,
-                               @will_message, @will_qos, @will_retain)
+                               @will_message, @will_qos, @will_retain, @ssl,
+                               ca_addr, ca_size)
         raise ConnectionError.new(connection_error_message) unless result
 
         # Short test loop (~3 seconds timeout)
@@ -365,10 +375,26 @@ module Net
         }
       end
 
+      def timeout_retryable?
+        native_state == "timeout" && _clear_timeout_impl
+      end
+
       def publish(topic, payload, retain: false, qos: 0)
         raise MQTTError.new("Not connected") unless connected?
         raise MQTTError.new("QoS must be 0 or 1") unless [0, 1].include?(qos)
-        _publish_impl(topic, payload.to_s, retain, qos)
+
+        retries_left = qos == 1 ? QOS1_MAX_RETRIES : 0
+
+        loop do
+          result = _publish_impl(topic, payload.to_s, retain, qos)
+          return result if result
+          break unless retries_left > 0 && timeout_retryable?
+
+          retries_left -= 1
+          poll_sleep_ms(QOS1_RETRY_DELAY_MS)
+        end
+
+        false
       end
 
       def subscribe(*topics, qos: 0)
@@ -376,8 +402,23 @@ module Net
         raise MQTTError.new("QoS must be 0 or 1") unless [0, 1].include?(qos)
         topics.each do |topic|
           @subscriptions[topic] = qos
-          _subscribe_impl(topic, qos)
+
+          retries_left = qos == 1 ? QOS1_MAX_RETRIES : 0
+          result = false
+
+          loop do
+            result = _subscribe_impl(topic, qos)
+            break if result
+            break unless retries_left > 0 && timeout_retryable?
+
+            retries_left -= 1
+            poll_sleep_ms(QOS1_RETRY_DELAY_MS)
+          end
+
+          return false unless result
         end
+
+        topics
       end
 
       def unsubscribe(*topics)
