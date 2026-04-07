@@ -86,7 +86,7 @@ client = Net::MQTT::Client.new(
   "test.mosquitto.org",
   8883,
   ssl: true,
-  ca_file: "/flash/ca.crt"
+  ca_file: "/flash/ca.der"
 )
 
 client.connect
@@ -95,14 +95,17 @@ client.disconnect
 ```
 
 On RP2040, `ca_file` is read from a flash-backed file and passed to TLS using
-`File#physical_address` and `File#size`.
+`File#physical_address` and `File#size`. In practice, a DER-encoded CA file is
+the reliable choice for this path. PEM may fail because the certificate bytes
+are passed directly from flash-backed storage.
 
 Current limitations:
 - `ssl: true` is still experimental
 - `ca_file` is supported for CA-only verification
+- use a DER-encoded CA file such as `/flash/ca.der`
 - `cert_file` and `key_file` are not supported yet
 - the CA certificate file must already exist on the device filesystem
-- this repository does not bundle a production CA certificate for `/flash/ca.crt`
+- this repository does not bundle a production CA certificate for `/flash/ca.der`
 
 ### Reconnect With Backoff
 
@@ -249,7 +252,7 @@ client.disconnect
 
 This gem provides the same `Net::MQTT` module and client API surface as picoruby-net-mqtt. Feature support differs:
 - QoS 0 and QoS 1 are supported
-- TLS/SSL is not supported
+- experimental MQTTS is supported
 - `clean_session` option is currently ignored
 - `ping` raises "not supported"
 
