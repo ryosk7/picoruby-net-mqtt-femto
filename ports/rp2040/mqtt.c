@@ -373,6 +373,22 @@ int MQTT_receive_queue_size_impl() {
   return g_ctx.recv_queue_count;
 }
 
+int MQTT_clear_timeout_impl() {
+  if (g_ctx.fsm_state != MQTT_STATE_TIMEOUT || g_ctx.client == NULL) {
+    return 0;
+  }
+
+  g_ctx.topic_to_pub[0] = '\0';
+  g_ctx.topic_to_sub[0] = '\0';
+
+  lwip_begin();
+  u8_t connected = mqtt_client_is_connected((mqtt_client_t *)g_ctx.client);
+  lwip_end();
+
+  g_ctx.fsm_state = connected ? MQTT_STATE_ACTIVE : MQTT_STATE_ERROR;
+  return connected ? 1 : 0;
+}
+
 const char *MQTT_pending_publish_topic_impl() {
   return (g_ctx.topic_to_pub[0] != '\0') ? g_ctx.topic_to_pub : NULL;
 }

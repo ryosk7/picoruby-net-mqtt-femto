@@ -18,6 +18,7 @@ extern int MQTT_is_connected_impl(void);
 extern int MQTT_connection_status_impl(void);
 extern int MQTT_fsm_state_impl(void);
 extern int MQTT_receive_queue_size_impl(void);
+extern int MQTT_clear_timeout_impl(void);
 extern const char *MQTT_pending_publish_topic_impl(void);
 extern int MQTT_pending_publish_qos_impl(void);
 extern const char *MQTT_pending_subscribe_topic_impl(void);
@@ -253,6 +254,16 @@ c_mqtt_receive_queue_size(mrbc_vm *vm, mrbc_value v[], int argc)
 }
 
 static void
+c_mqtt_clear_timeout(mrbc_vm *vm, mrbc_value v[], int argc)
+{
+  if (MQTT_clear_timeout_impl()) {
+    SET_TRUE_RETURN();
+  } else {
+    SET_FALSE_RETURN();
+  }
+}
+
+static void
 c_mqtt_pending_publish_topic(mrbc_vm *vm, mrbc_value v[], int argc)
 {
   const char *topic = MQTT_pending_publish_topic_impl();
@@ -313,6 +324,8 @@ void mrbc_net_mqtt_femto_init(mrbc_vm *vm) {
   mrbc_define_method(0, mrbc_class_object, "_fsm_state_impl", c_mqtt_fsm_state);
   mrbc_define_method(0, mrbc_class_object, "_receive_queue_size_impl",
                      c_mqtt_receive_queue_size);
+  mrbc_define_method(0, mrbc_class_object, "_clear_timeout_impl",
+                     c_mqtt_clear_timeout);
   mrbc_define_method(0, mrbc_class_object, "_pending_publish_topic_impl",
                      c_mqtt_pending_publish_topic);
   mrbc_define_method(0, mrbc_class_object, "_pending_publish_qos_impl",

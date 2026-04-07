@@ -42,6 +42,9 @@ module Net
     }
 
     class Client
+      QOS1_MAX_RETRIES = 1
+      QOS1_RETRY_DELAY_MS = 100
+
       attr_reader :host, :port
       attr_accessor :client_id, :keep_alive, :clean_session
       attr_accessor :username, :password
@@ -372,10 +375,26 @@ module Net
         }
       end
 
+      def timeout_retryable?
+        native_state == "timeout" && _clear_timeout_impl
+      end
+
       def publish(topic, payload, retain: false, qos: 0)
         raise MQTTError.new("Not connected") unless connected?
         raise MQTTError.new("QoS must be 0 or 1") unless [0, 1].include?(qos)
-        _publish_impl(topic, payload.to_s, retain, qos)
+
+        retries_left = qos == 1 ? QOS1_MAX_RETRIES : 0
+
+        loop do
+          result = _publish_impl(topic, payload.to_s, retain, qos)
+          return result if result
+          break unless retries_left > 0 && timeout_retryable?
+
+          retries_left -= 1
+          poll_sleep_ms(QOS1_RETRY_DELAY_MS)
+        end
+
+        false
       end
 
       def subscribe(*topics, qos: 0)
@@ -383,8 +402,23 @@ module Net
         raise MQTTError.new("QoS must be 0 or 1") unless [0, 1].include?(qos)
         topics.each do |topic|
           @subscriptions[topic] = qos
-          _subscribe_impl(topic, qos)
+
+          retries_left = qos == 1 ? QOS1_MAX_RETRIES : 0
+          result = false
+
+          loop do
+            result = _subscribe_impl(topic, qos)
+            break if result
+            break unless retries_left > 0 && timeout_retryable?
+
+            retries_left -= 1
+            poll_sleep_ms(QOS1_RETRY_DELAY_MS)
+          end
+
+          return false unless result
         end
+
+        topics
       end
 
       def unsubscribe(*topics)
